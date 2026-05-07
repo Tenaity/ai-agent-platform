@@ -46,6 +46,25 @@ make run-runtime-api
 
 Then visit `GET /health` or `GET /version`.
 
+Runtime API examples:
+
+```bash
+curl http://localhost:8000/health
+curl http://localhost:8000/version
+curl http://localhost:8000/v1/agents
+curl http://localhost:8000/v1/agents/customer_service/manifest
+curl -X POST http://localhost:8000/v1/agents/customer_service/invoke \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tenant_id": "tenant_demo",
+    "channel": "api",
+    "user_id": "user_123",
+    "thread_id": "thread_456",
+    "message": "How do I reset my password?",
+    "metadata": {"locale": "en-US"}
+  }'
+```
+
 ## Architectural Guardrails
 
 - Apps stay thin and delegate reusable behavior to packages.

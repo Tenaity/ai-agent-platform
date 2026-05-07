@@ -1,46 +1,30 @@
-"""HTTP entrypoint for the platform runtime API.
-
-The runtime API intentionally stays thin. It should expose runtime capabilities
-from reusable packages rather than embedding agent, LLM, or tool logic in route
-handlers.
-"""
-
-from typing import Literal
+"""HTTP entrypoint for the platform runtime API."""
 
 from fastapi import FastAPI
-from pydantic import BaseModel
 
+from runtime_api.errors import AgentNotFoundError, agent_not_found_handler
+from runtime_api.routes import agents, health, invoke
 from snp_agent_core.version import __version__
 
 
-class HealthResponse(BaseModel):
-    """Health check response used by infrastructure probes."""
+def create_app() -> FastAPI:
+    """Create the FastAPI app and register route modules.
 
-    status: Literal["ok"]
+    App creation wires HTTP routes, dependencies, and exception handlers. Agent
+    loading and future runtime execution stay behind dedicated modules so route
+    handlers remain small extension points.
+    """
 
-
-class VersionResponse(BaseModel):
-    """Version response for confirming the deployed platform build."""
-
-    version: str
-
-
-app = FastAPI(
-    title="SNP AI Agent Platform Runtime API",
-    version=__version__,
-    description="Thin API facade for the internal AI Agent Platform runtime.",
-)
-
-
-@app.get("/health", response_model=HealthResponse)
-def health() -> HealthResponse:
-    """Return a lightweight readiness signal without touching downstream services."""
-
-    return HealthResponse(status="ok")
+    runtime_app = FastAPI(
+        title="SNP AI Agent Platform Runtime API",
+        version=__version__,
+        description="Thin API facade for the internal AI Agent Platform runtime.",
+    )
+    runtime_app.include_router(health.router)
+    runtime_app.include_router(agents.router)
+    runtime_app.include_router(invoke.router)
+    runtime_app.add_exception_handler(AgentNotFoundError, agent_not_found_handler)
+    return runtime_app
 
 
-@app.get("/version", response_model=VersionResponse)
-def version() -> VersionResponse:
-    """Return the platform package version exposed by the core package."""
-
-    return VersionResponse(version=__version__)
+app = create_app()
