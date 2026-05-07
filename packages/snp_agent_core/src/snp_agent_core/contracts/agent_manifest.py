@@ -26,8 +26,9 @@ class ManifestBaseModel(BaseModel):
 class RuntimeManifest(ManifestBaseModel):
     """Runtime graph configuration declared by an agent."""
 
-    kind: str = Field(..., description="Runtime implementation family, such as langgraph.")
-    entrypoint: str = Field(..., description="Import path or symbolic graph entrypoint.")
+    type: str = Field(..., description="Runtime implementation family, such as langgraph.")
+    graph: str = Field(..., description="Import path for the graph builder function.")
+    state_schema: str = Field(..., description="Import path for the graph state schema.")
 
 
 class ModelPolicyManifest(ManifestBaseModel):

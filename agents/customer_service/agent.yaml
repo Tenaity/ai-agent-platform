@@ -3,8 +3,9 @@ version: 0.1.0
 owner: customer-experience-platform
 domain: customer_service
 runtime:
-  kind: langgraph
-  entrypoint: agents.customer_service.graph:build_graph
+  type: langgraph
+  graph: agents.customer_service.graph:build_graph
+  state_schema: agents.customer_service.state:CustomerServiceState
 model_policy:
   provider: none
   model: placeholder

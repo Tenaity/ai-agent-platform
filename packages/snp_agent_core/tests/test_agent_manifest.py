@@ -49,7 +49,7 @@ def test_agent_manifest_rejects_blank_nested_required_strings() -> None:
     """Blank nested manifest strings are rejected before agent registration."""
 
     data = load_customer_service_manifest()
-    data["runtime"]["kind"] = " "
+    data["runtime"]["graph"] = " "
 
     with pytest.raises(ValidationError):
         AgentManifest.model_validate(data)

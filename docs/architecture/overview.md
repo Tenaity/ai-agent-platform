@@ -55,3 +55,15 @@ The Runtime API is not responsible for graph execution, direct LLM calls, or
 direct tool calls. `POST /v1/agents/{agent_id}/invoke` validates the agent and
 request body, then returns a scaffold `RuntimeResponse` until a later PR adds a
 runtime adapter behind the same contract.
+
+## LangGraph Runtime
+
+PR-004 introduces the first minimal LangGraph-backed execution path. Agent
+manifests declare a runtime type, graph builder import path, and state schema
+import path. The Runtime API loads the manifest, delegates graph loading to
+`snp_agent_core.graph`, and returns the graph result as a `RuntimeResponse`.
+
+The current customer service graph is deterministic and does not call LLMs,
+tools, external APIs, persistence, or LangSmith. The graph runner is the
+extension point where later PRs can add checkpointers, tracing, tool mediation,
+memory, RAG, and safety enforcement behind the same API contract.
