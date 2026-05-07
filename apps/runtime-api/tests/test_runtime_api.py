@@ -77,8 +77,11 @@ def test_get_agent_manifest_returns_full_manifest() -> None:
     assert body["tools"]["requires_gateway"] is True
 
 
-def test_invoke_agent_returns_scaffold_response() -> None:
+def test_invoke_agent_works_without_langsmith_env(monkeypatch: Any) -> None:
     """The invoke endpoint returns the customer service graph answer."""
+
+    monkeypatch.delenv("LANGSMITH_TRACING", raising=False)
+    monkeypatch.delenv("LANGSMITH_API_KEY", raising=False)
 
     response = create_client().post(
         "/v1/agents/customer_service/invoke",
@@ -96,6 +99,20 @@ def test_invoke_agent_returns_scaffold_response() -> None:
         "handoff_required": False,
         "metadata": {},
     }
+
+
+def test_invoke_agent_does_not_return_secrets(monkeypatch: Any) -> None:
+    """Runtime responses do not expose LangSmith credentials."""
+
+    monkeypatch.setenv("LANGSMITH_API_KEY", "secret-test-key")
+
+    response = create_client().post(
+        "/v1/agents/customer_service/invoke",
+        json=valid_runtime_request(),
+    )
+
+    assert response.status_code == 200
+    assert "secret-test-key" not in response.text
 
 
 def test_unknown_agent_returns_structured_404() -> None:
