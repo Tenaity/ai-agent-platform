@@ -67,3 +67,11 @@ The current customer service graph is deterministic and does not call LLMs,
 tools, external APIs, persistence, or LangSmith. The graph runner is the
 extension point where later PRs can add checkpointers, tracing, tool mediation,
 memory, RAG, and safety enforcement behind the same API contract.
+
+## Observability
+
+PR-005 adds a LangSmith tracing skeleton without dashboards or evals. The
+Runtime API builds a `RuntimeContext`, derives standard trace metadata from the
+context and `AgentManifest`, and passes that metadata into graph execution
+config. Tracing remains disabled by default and local tests do not require
+LangSmith credentials.

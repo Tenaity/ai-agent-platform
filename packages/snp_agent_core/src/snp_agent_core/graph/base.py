@@ -8,7 +8,11 @@ from snp_agent_core.contracts import AgentRunStatus, RuntimeRequest, RuntimeResp
 class InvokableGraph(Protocol):
     """Minimal graph protocol required by the core runtime runner."""
 
-    def invoke(self, input: dict[str, Any]) -> dict[str, Any]:
+    def invoke(
+        self,
+        input: dict[str, Any],
+        config: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Execute the graph with serialized state and return serialized state."""
 
 
@@ -26,8 +30,16 @@ class GraphRunner:
 
         self._graph = graph
 
-    def invoke(self, request: RuntimeRequest) -> RuntimeResponse:
+    def invoke(
+        self,
+        request: RuntimeRequest,
+        trace_metadata: dict[str, str] | None = None,
+    ) -> RuntimeResponse:
         """Execute the graph and adapt the final state into a runtime response."""
+
+        config: dict[str, Any] | None = None
+        if trace_metadata is not None:
+            config = {"metadata": trace_metadata}
 
         result = self._graph.invoke(
             {
@@ -37,7 +49,8 @@ class GraphRunner:
                 "channel": request.channel,
                 "message": request.message,
                 "final_answer": None,
-            }
+            },
+            config=config,
         )
         answer = result.get("final_answer")
         return RuntimeResponse(

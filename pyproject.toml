@@ -8,6 +8,7 @@ dependencies = [
     "fastapi>=0.115.0",
     "langchain-core>=0.3.0",
     "langgraph>=0.2.0",
+    "langsmith>=0.1.0",
     "pydantic>=2.8.0",
     "pydantic-settings>=2.4.0",
     "PyYAML>=6.0.2",
@@ -33,6 +34,7 @@ testpaths = [
     "apps/runtime-api/tests",
     "agents/customer_service/tests",
     "packages/snp_agent_core/tests",
+    "packages/snp_agent_observability/tests",
     "tests",
 ]
 pythonpath = [
@@ -87,6 +89,8 @@ files = [
     "apps/runtime-api/tests",
     "packages/snp_agent_core/src",
     "packages/snp_agent_core/tests",
+    "packages/snp_agent_observability/src",
+    "packages/snp_agent_observability/tests",
     "tests",
 ]
 mypy_path = [
