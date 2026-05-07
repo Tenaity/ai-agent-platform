@@ -1,14 +1,25 @@
-"""LangGraph-backed invocation route for the runtime API."""
+"""LangGraph-backed invocation route for the runtime API.
+
+This route handler is intentionally thin. Its only responsibilities are:
+
+1. Accept a validated HTTP POST body as a ``RuntimeRequest``.
+2. Read the ``request_id`` already attached by ``RequestIdMiddleware``.
+3. Delegate execution to ``InvocationService``.
+4. Return the ``RuntimeResponse``.
+
+All execution orchestration — manifest loading, run identity, timing, trace
+metadata, error mapping — lives in ``InvocationService``, not here.
+"""
+
+from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 
-from runtime_api.dependencies import get_agent_registry
-from runtime_api.registry import FileAgentRegistry
-from snp_agent_core.contracts import RuntimeContext, RuntimeRequest, RuntimeResponse
-from snp_agent_core.graph import load_graph_runner
-from snp_agent_observability import build_trace_metadata
+from runtime_api.dependencies import get_invocation_service
+from runtime_api.services.invocation_service import InvocationService
+from snp_agent_core.contracts import RuntimeRequest, RuntimeResponse
 
 router = APIRouter(prefix="/v1/agents", tags=["invoke"])
 
@@ -17,20 +28,15 @@ router = APIRouter(prefix="/v1/agents", tags=["invoke"])
 def invoke_agent(
     agent_id: str,
     request: RuntimeRequest,
-    registry: Annotated[FileAgentRegistry, Depends(get_agent_registry)],
+    http_request: Request,
+    service: Annotated[InvocationService, Depends(get_invocation_service)],
 ) -> RuntimeResponse:
-    """Validate agent existence and invoke its manifest-declared graph."""
+    """Validate agent existence and invoke its manifest-declared graph.
 
-    manifest = registry.get_manifest(agent_id)
-    context = RuntimeContext(
-        request_id=f"{request.thread_id}:{agent_id}",
-        tenant_id=request.tenant_id,
-        channel=request.channel,
-        user_id=request.user_id,
-        thread_id=request.thread_id,
-        agent_id=agent_id,
-        metadata=request.metadata,
-    )
-    trace_metadata = build_trace_metadata(context=context, agent_manifest=manifest)
-    runner = load_graph_runner(manifest)
-    return runner.invoke(request, trace_metadata=trace_metadata)
+    The route reads ``request.state.request_id`` set by ``RequestIdMiddleware``
+    and passes it through to ``InvocationService`` so the ID propagates into
+    the ``AgentRun`` record and ``RuntimeResponse.metadata``.
+    """
+
+    request_id: str = getattr(http_request.state, "request_id", "")
+    return service.invoke(agent_id=agent_id, request=request, request_id=request_id)
