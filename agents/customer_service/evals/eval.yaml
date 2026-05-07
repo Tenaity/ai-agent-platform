@@ -1,0 +1,29 @@
+# eval configuration for customer_service agent
+# This file declares which datasets and evaluators are used for regression gating.
+# The eval runner reads this file to enforce minimum pass rates before releases.
+
+agent_id: customer_service
+version: "0.1.0"
+
+datasets:
+  - path: datasets/customer_service/regression_v1.jsonl
+    description: "PR-006 initial smoke suite — deterministic graph assertions."
+    tags: [smoke, regression]
+
+evaluators:
+  - name: must_contain
+    description: >
+      Asserts that every string in expected.must_contain appears as a
+      substring of the agent's final answer. Fails if answer is absent.
+  - name: status_matches
+    description: >
+      Asserts that the agent run status matches expected.status exactly
+      (case-insensitive comparison).
+
+thresholds:
+  min_pass_rate: 0.9   # matches agent.yaml eval.min_pass_rate
+
+notes: |
+  No real LLM calls are made. No LangSmith credentials required.
+  The customer_service graph is intentionally deterministic in PR-006.
+  Real RAG, tool, and LLM-as-judge evaluators will be added in later PRs.
