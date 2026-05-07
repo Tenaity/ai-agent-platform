@@ -2,10 +2,10 @@
 
 from typing import Any
 
+from agents.customer_service.graph import HELLO_ANSWER
 from fastapi.testclient import TestClient
 
 from runtime_api.main import app
-from runtime_api.routes.invoke import SCAFFOLD_ANSWER
 from snp_agent_core.version import __version__
 
 
@@ -70,14 +70,15 @@ def test_get_agent_manifest_returns_full_manifest() -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["id"] == "customer_service"
-    assert body["runtime"]["kind"] == "langgraph"
+    assert body["runtime"]["type"] == "langgraph"
+    assert body["runtime"]["graph"] == "agents.customer_service.graph:build_graph"
     assert body["memory"] is None
     assert body["retrieval"] is None
     assert body["tools"]["requires_gateway"] is True
 
 
 def test_invoke_agent_returns_scaffold_response() -> None:
-    """The invoke endpoint returns a scaffold RuntimeResponse without execution."""
+    """The invoke endpoint returns the customer service graph answer."""
 
     response = create_client().post(
         "/v1/agents/customer_service/invoke",
@@ -88,7 +89,7 @@ def test_invoke_agent_returns_scaffold_response() -> None:
     assert response.json() == {
         "thread_id": "thread_456",
         "status": "completed",
-        "answer": SCAFFOLD_ANSWER,
+        "answer": HELLO_ANSWER,
         "citations": [],
         "tool_calls": [],
         "trace_id": None,

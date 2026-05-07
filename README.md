@@ -22,9 +22,10 @@ runtime apps.
 
 - PR-001: establish the monorepo scaffold, contracts, docs, and tests.
 - PR-002: add agent registry loading and manifest discovery.
-- PR-003: introduce LangGraph runtime abstractions behind typed interfaces.
-- PR-004: add Tool Gateway contracts with fake-tool integration tests.
-- PR-005: add memory, RAG, safety, observability, and evaluation integrations.
+- PR-003: expose a thin Runtime API shell around core contracts.
+- PR-004: introduce a minimal LangGraph-backed hello runtime.
+- PR-005: add Tool Gateway contracts with fake-tool integration tests.
+- PR-006: add memory, RAG, safety, observability, and evaluation integrations.
 
 LangChain, LangGraph, and LangSmith dependencies are intentionally deferred
 until the runtime contracts are ready to absorb them cleanly.

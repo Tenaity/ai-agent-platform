@@ -2,8 +2,13 @@
 
 from fastapi import FastAPI
 
-from runtime_api.errors import AgentNotFoundError, agent_not_found_handler
+from runtime_api.errors import (
+    AgentNotFoundError,
+    agent_not_found_handler,
+    graph_load_error_handler,
+)
 from runtime_api.routes import agents, health, invoke
+from snp_agent_core.graph import GraphLoadError
 from snp_agent_core.version import __version__
 
 
@@ -24,6 +29,7 @@ def create_app() -> FastAPI:
     runtime_app.include_router(agents.router)
     runtime_app.include_router(invoke.router)
     runtime_app.add_exception_handler(AgentNotFoundError, agent_not_found_handler)
+    runtime_app.add_exception_handler(GraphLoadError, graph_load_error_handler)
     return runtime_app
 
 

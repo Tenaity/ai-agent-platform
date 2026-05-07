@@ -3,6 +3,8 @@
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
+from snp_agent_core.graph import GraphLoadError
+
 
 class AgentNotFoundError(Exception):
     """Raised when an agent identifier is not available in the registry."""
@@ -26,6 +28,23 @@ def agent_not_found_handler(_request: Request, exc: Exception) -> JSONResponse:
             "detail": {
                 "code": "agent_not_found",
                 "message": f"Agent '{exc.agent_id}' was not found.",
+            }
+        },
+    )
+
+
+def graph_load_error_handler(_request: Request, exc: Exception) -> JSONResponse:
+    """Convert graph loading failures into clear HTTP 500 responses."""
+
+    if not isinstance(exc, GraphLoadError):
+        raise exc
+
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": {
+                "code": "graph_load_error",
+                "message": str(exc),
             }
         },
     )

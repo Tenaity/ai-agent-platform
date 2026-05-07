@@ -17,6 +17,26 @@ Agents must not hide production behavior only in prompts. Workflow state,
 external inputs, and tool results should cross package boundaries through typed
 contracts.
 
+## Graph Contract
+
+LangGraph agents declare their graph entrypoint in `agent.yaml`:
+
+```yaml
+runtime:
+  type: langgraph
+  graph: agents.customer_service.graph:build_graph
+  state_schema: agents.customer_service.state:CustomerServiceState
+```
+
+`build_graph()` must be a zero-argument callable that returns an object with an
+`invoke()` method, typically a compiled LangGraph `StateGraph`. The state schema
+should be a typed state object, such as a `TypedDict`, with fields needed by the
+runtime adapter and graph nodes.
+
+PR-004 graphs must remain deterministic and local. Do not add real LLM provider
+calls, real tools, persistence, or LangSmith tracing until the platform
+contracts for those concerns exist.
+
 ## Runtime Contract Examples
 
 Runtime adapters receive a `RuntimeRequest` after the platform has selected an
