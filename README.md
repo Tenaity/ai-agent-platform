@@ -25,8 +25,8 @@ runtime apps.
 - PR-003: expose a thin Runtime API shell around core contracts.
 - PR-004: introduce a minimal LangGraph-backed hello runtime.
 - PR-005: add a LangSmith tracing skeleton for graph executions.
-- PR-006: add Tool Gateway contracts with fake-tool integration tests.
-- PR-007: add memory, RAG, safety, observability, and evaluation integrations.
+- PR-006: add local-first regression evaluation skeleton with deterministic evaluators.
+- PR-007: add Tool Gateway contracts with fake-tool integration tests.
 
 LangChain, LangGraph, and LangSmith dependencies are intentionally deferred
 until the runtime contracts are ready to absorb them cleanly.
@@ -38,6 +38,12 @@ make install
 make lint
 make typecheck
 make test
+```
+
+Run the regression eval for an agent:
+
+```bash
+make eval AGENT=snp.customer_service.zalo DATASET=datasets/customer_service/regression_v1.jsonl
 ```
 
 Run the runtime API locally:

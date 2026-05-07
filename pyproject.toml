@@ -32,9 +32,11 @@ package = false
 addopts = "--strict-markers --strict-config"
 testpaths = [
     "apps/runtime-api/tests",
+    "apps/eval-runner/tests",
     "agents/customer_service/tests",
     "packages/snp_agent_core/tests",
     "packages/snp_agent_observability/tests",
+    "packages/snp_agent_testing/tests",
     "tests",
 ]
 pythonpath = [
@@ -87,10 +89,14 @@ warn_unused_configs = true
 files = [
     "apps/runtime-api/src",
     "apps/runtime-api/tests",
+    "apps/eval-runner/src",
+    "apps/eval-runner/tests",
     "packages/snp_agent_core/src",
     "packages/snp_agent_core/tests",
     "packages/snp_agent_observability/src",
     "packages/snp_agent_observability/tests",
+    "packages/snp_agent_testing/src",
+    "packages/snp_agent_testing/tests",
     "tests",
 ]
 mypy_path = [
