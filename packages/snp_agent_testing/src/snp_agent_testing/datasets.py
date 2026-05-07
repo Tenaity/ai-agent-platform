@@ -5,10 +5,11 @@ Cases are validated at load time via Pydantic so runner code can trust the
 types without defensive checks.
 """
 
+import json
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 
 class EvalCaseInput(BaseModel):
@@ -44,9 +45,14 @@ class EvalCaseExpected(BaseModel):
 
 
 class EvalCaseMetadata(BaseModel):
-    """Optional metadata attached to an eval case for filtering and reporting."""
+    """Optional metadata attached to an eval case for filtering and reporting.
 
-    model_config = ConfigDict(extra="allow")
+    The schema uses ``extra="forbid"`` so that unknown keys in a dataset file
+    are caught immediately at load time rather than silently discarded. Authors
+    who need additional metadata fields should extend this model explicitly.
+    """
+
+    model_config = ConfigDict(extra="forbid")
 
     category: str = Field(default="untagged", description="Category label, e.g. smoke, regression.")
 
@@ -84,8 +90,6 @@ def load_dataset(path: Path) -> list[EvalCase]:
         FileNotFoundError: If *path* does not exist.
         ValueError: If any line cannot be parsed or validated.
     """
-    import json
-
     cases: list[EvalCase] = []
     text = path.read_text(encoding="utf-8")
 
@@ -101,7 +105,7 @@ def load_dataset(path: Path) -> list[EvalCase]:
 
         try:
             cases.append(EvalCase.model_validate(data))
-        except Exception as exc:
+        except ValidationError as exc:
             raise ValueError(f"Dataset line {lineno}: validation error — {exc}") from exc
 
     return cases

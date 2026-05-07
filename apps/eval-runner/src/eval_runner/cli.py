@@ -15,6 +15,7 @@ import argparse
 import sys
 from pathlib import Path
 
+from eval_runner.main import run_eval
 from snp_agent_testing.results import print_summary
 
 
@@ -78,8 +79,6 @@ def main() -> None:
     print(f"Running eval: agent={agent_id}  dataset={dataset_path}")
 
     try:
-        from eval_runner.main import run_eval
-
         summary = run_eval(agent_id=agent_id, dataset_path=dataset_path, repo_root=repo_root)
     except (FileNotFoundError, ValueError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
