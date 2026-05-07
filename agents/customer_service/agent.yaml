@@ -1,0 +1,23 @@
+id: customer_service
+version: 0.1.0
+owner: customer-experience-platform
+domain: customer_service
+runtime:
+  kind: langgraph
+  entrypoint: agents.customer_service.graph:build_graph
+model_policy:
+  provider: none
+  model: placeholder
+  allow_real_calls: false
+tools:
+  allowed: []
+  requires_gateway: true
+safety:
+  policy: default_customer_support
+  human_review_required: true
+observability:
+  tracing: true
+  project: customer_service
+eval:
+  dataset: datasets/customer_service
+  min_pass_rate: 0.9
