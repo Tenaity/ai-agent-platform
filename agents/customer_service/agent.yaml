@@ -9,6 +9,8 @@ model_policy:
   provider: none
   model: placeholder
   allow_real_calls: false
+memory: null
+retrieval: null
 tools:
   allowed: []
   requires_gateway: true

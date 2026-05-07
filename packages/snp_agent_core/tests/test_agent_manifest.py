@@ -29,6 +29,8 @@ def test_sample_customer_service_manifest_validates() -> None:
     manifest = AgentManifest.model_validate(load_customer_service_manifest())
 
     assert manifest.id == "customer_service"
+    assert manifest.memory is None
+    assert manifest.retrieval is None
     assert manifest.tools.requires_gateway is True
     assert manifest.model_policy.allow_real_calls is False
 
@@ -38,6 +40,16 @@ def test_agent_manifest_rejects_blank_required_identity_fields() -> None:
 
     data = load_customer_service_manifest()
     data["id"] = " "
+
+    with pytest.raises(ValidationError):
+        AgentManifest.model_validate(data)
+
+
+def test_agent_manifest_rejects_blank_nested_required_strings() -> None:
+    """Blank nested manifest strings are rejected before agent registration."""
+
+    data = load_customer_service_manifest()
+    data["runtime"]["kind"] = " "
 
     with pytest.raises(ValidationError):
         AgentManifest.model_validate(data)

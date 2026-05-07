@@ -24,3 +24,23 @@ infrastructure for domain-specific agents.
 Apps should expose these capabilities without owning domain-neutral logic.
 Packages should own reusable contracts and runtime behavior. Agents should own
 domain-specific behavior declarations and tests.
+
+## Core Runtime Contracts
+
+PR-002 establishes the serialized contract layer before any real agent
+execution exists. `snp_agent_core.contracts` defines the Pydantic models that
+future runtime adapters will consume and produce:
+
+- `AgentManifest` validates versioned agent declarations from `agent.yaml`.
+- `RuntimeRequest` is the inbound message and routing envelope accepted by the
+  platform runtime.
+- `RuntimeContext` is the normalized execution context shared between runtime
+  components.
+- `RuntimeResponse` is the outbound result envelope with run status, answer,
+  citations, tool call records, trace linkage, handoff state, and metadata.
+- `Citation`, `ToolCallRecord`, and `AgentRunStatus` keep provenance, tool
+  auditing, and run state serializable without binding core packages to a graph
+  engine or provider SDK.
+
+These contracts are boundaries, not execution code. LangGraph, LangChain, and
+LangSmith integrations should be introduced behind these models in later PRs.
