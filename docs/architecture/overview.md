@@ -44,3 +44,14 @@ future runtime adapters will consume and produce:
 
 These contracts are boundaries, not execution code. LangGraph, LangChain, and
 LangSmith integrations should be introduced behind these models in later PRs.
+
+## Runtime API Responsibilities
+
+PR-003 adds a production-shaped Runtime API shell around the core contracts. The
+API is responsible for HTTP routing, request/response validation, manifest
+discovery through the file-backed registry, and structured API errors.
+
+The Runtime API is not responsible for graph execution, direct LLM calls, or
+direct tool calls. `POST /v1/agents/{agent_id}/invoke` validates the agent and
+request body, then returns a scaffold `RuntimeResponse` until a later PR adds a
+runtime adapter behind the same contract.
