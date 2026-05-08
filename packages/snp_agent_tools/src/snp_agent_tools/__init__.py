@@ -2,6 +2,12 @@
 
 from snp_agent_tools.contracts import ToolExecutionMode, ToolRiskLevel, ToolSpec
 from snp_agent_tools.errors import DuplicateToolError, ToolNotFoundError, ToolRegistryError
+from snp_agent_tools.execution import (
+    ToolExecutionRequest,
+    ToolExecutionResult,
+    ToolExecutionStatus,
+)
+from snp_agent_tools.executor import ToolExecutor
 from snp_agent_tools.gateway import ToolGateway
 from snp_agent_tools.policy import (
     ToolAccessDecision,
@@ -9,14 +15,20 @@ from snp_agent_tools.policy import (
     ToolAccessResult,
     ToolPolicy,
 )
+from snp_agent_tools.policy_executor import PolicyAwareToolExecutor
 from snp_agent_tools.registry import ToolRegistry
 
 __all__ = [
     "DuplicateToolError",
+    "PolicyAwareToolExecutor",
     "ToolAccessDecision",
     "ToolAccessRequest",
     "ToolAccessResult",
     "ToolExecutionMode",
+    "ToolExecutionRequest",
+    "ToolExecutionResult",
+    "ToolExecutionStatus",
+    "ToolExecutor",
     "ToolGateway",
     "ToolNotFoundError",
     "ToolPolicy",

@@ -1,7 +1,9 @@
 # Tool Gateway Policy Skeleton
 
-PR-010 introduces a policy-only `ToolGateway` skeleton. It decides whether an
-agent may use a registered tool, but it does not execute tools.
+PR-010 introduced a policy-only `ToolGateway` skeleton. It decides whether an
+agent may use a registered tool, but it does not execute tools. PR-012 adds a
+separate `ToolExecutor` interface and `PolicyAwareToolExecutor` wrapper that
+checks this gateway before delegation.
 
 ## Responsibility Split
 
@@ -69,3 +71,5 @@ gateway is only policy decision logic.
 
 See [architecture/tool-governance-flow.md](architecture/tool-governance-flow.md)
 for the same flow in architecture context.
+See [tool-execution.md](tool-execution.md) for the executor interface that
+composes with this policy layer.
