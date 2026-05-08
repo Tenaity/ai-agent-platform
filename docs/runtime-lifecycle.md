@@ -57,35 +57,43 @@ per `request_id`.
 
 ## Invocation Flow
 
+```mermaid
+sequenceDiagram
+    participant Client as Client / n8n / Zalo
+    participant API as Runtime API
+    participant MW as RequestIdMiddleware
+    participant Service as InvocationService
+    participant Registry as Agent Registry
+    participant Graph as LangGraph Runtime
+    participant Gateway as ToolGateway
+    participant LS as LangSmith Metadata
+
+    Client->>API: POST /v1/agents/{agent_id}/invoke
+    API->>MW: Read or generate X-Request-ID
+    MW->>Service: request_id + RuntimeRequest
+    Service->>Registry: Load agent manifest
+    Registry-->>Service: AgentManifest
+    Service->>Service: Generate run_id
+    Service->>LS: Build trace metadata
+    Service->>Graph: Execute graph with thread_id
+    Graph->>Gateway: Check tool access policy if needed
+    Gateway-->>Graph: allowed / denied / requires_approval
+    Graph-->>Service: RuntimeResponse
+    Service->>Service: Add run_id/request_id/duration_ms
+    Service-->>API: RuntimeResponse
+    API-->>Client: Response + X-Request-ID
 ```
-HTTP POST /v1/agents/{agent_id}/invoke
-    │
-    ├── RequestIdMiddleware
-    │       read X-Request-ID or generate UUID4
-    │       → request.state.request_id
-    │       → X-Request-ID response header
-    │
-    ├── FastAPI validation
-    │       RuntimeRequest Pydantic model
-    │       → 422 on invalid payload
-    │
-    ├── invoke_agent() route handler  [thin]
-    │       read request.state.request_id
-    │       → InvocationService.invoke(agent_id, request, request_id)
-    │
-    └── InvocationService.invoke()
-            1. registry.get_manifest(agent_id)   → AgentNotFoundError → 404
-            2. generate run_id = UUID4
-            3. build RuntimeContext(request_id=request_id, ...)
-            4. build_trace_metadata(context, manifest)
-            5. build optional checkpointer from runtime settings
-            6. load_graph_runner(manifest, checkpointer) → GraphLoadError → 500
-            7. started_at = now(UTC)
-            8. runner.invoke(request)
-            9. completed_at = now(UTC)
-            10. duration_ms = (completed_at - started_at).total_ms
-            11. return RuntimeResponse + metadata{run_id, request_id, duration_ms}
-```
+
+Implementation steps inside `InvocationService`:
+
+1. `registry.get_manifest(agent_id)` or structured `404`.
+2. Generate `run_id`.
+3. Build `RuntimeContext`.
+4. Build trace metadata.
+5. Build optional checkpointer from runtime settings.
+6. Load graph runner with optional checkpointer.
+7. Invoke the graph.
+8. Add `run_id`, `request_id`, and `duration_ms` to response metadata.
 
 On any **unexpected graph exception** (not `AgentNotFoundError` or
 `GraphLoadError`), `InvocationService` returns a clean `FAILED` response with
@@ -166,7 +174,10 @@ See [checkpointing.md](checkpointing.md) for configuration and semantics.
 | Persistence | `InvocationService.invoke()` — save `AgentRun` after graph returns |
 | LangSmith streaming | `GraphRunner.invoke()` — pass run config with trace IDs |
 | Checkpointing | `load_graph_runner()` / `GraphRunner.invoke()` — compile with checkpointer and pass `thread_id` |
-| Tool mediation | Between step 7 and 8 — Tool Gateway intercepts graph tool calls |
+| Tool mediation | Future graph/tool nodes — Tool Gateway policy already exists; execution adapters come later |
 | Memory | `RuntimeContext` — inject scoped memory state before graph runs |
 | Safety | Before step 7 — safety pipeline validates request and response |
 | RAG | Inside the graph — retrieval nodes consume `RuntimeContext` |
+
+See [architecture/request-sequence.md](architecture/request-sequence.md) for the
+request sequence diagram.

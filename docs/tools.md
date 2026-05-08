@@ -1,8 +1,9 @@
 # Tool Specifications and Registry
 
-PR-009 introduces domain-neutral tool contracts before tool execution exists.
-The goal is to describe available capabilities in a reusable, testable shape so
-future Tool Gateway work can enforce policy without changing agent code.
+PR-009 introduced domain-neutral tool contracts before tool execution exists.
+The goal is to describe available capabilities in a reusable, testable shape.
+PR-010 added a policy-only ToolGateway that uses these specs to make access
+decisions.
 
 ## `ToolSpec`
 
@@ -53,11 +54,10 @@ and `ToolPolicy` to decide whether an agent may use a tool. The gateway returns
 `allowed`, `denied`, or `requires_approval`, but still does not execute tools.
 
 The future execution-capable Tool Gateway will be the only approved path for
-tool execution. It will use `ToolSpec` metadata to enforce policy, validate
-inputs, check approval requirements, audit calls, and route to fake or real
-integrations.
+tool execution. It will use `ToolSpec` metadata to validate inputs, audit calls,
+and route to fake or real integrations after policy allows access.
 
-PR-009 deliberately does not add:
+PR-009 and PR-010 deliberately do not add:
 
 - actual tool execution
 - RAG
@@ -68,3 +68,5 @@ PR-009 deliberately does not add:
 - database persistence
 
 See [tool-gateway.md](tool-gateway.md) for the policy decision skeleton.
+See [architecture/tool-governance-flow.md](architecture/tool-governance-flow.md)
+for the policy flow diagram.

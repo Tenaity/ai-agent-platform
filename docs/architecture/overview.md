@@ -1,168 +1,162 @@
 # Architecture Overview
 
-The SNP AI Agent Platform is organized as layered, reusable runtime
-infrastructure for domain-specific agents.
+The SNP AI Agent Platform is layered runtime infrastructure for building
+domain-specific agents. It provides reusable contracts, graph execution
+plumbing, observability metadata, eval scaffolding, checkpoint configuration,
+and tool governance policy. It is not a one-off chatbot.
+
+## Component Model
+
+```mermaid
+flowchart TD
+    Client["External Client: n8n / Zalo / Internal App"] --> API["Runtime API"]
+
+    API --> Middleware["RequestIdMiddleware"]
+    Middleware --> Invoke["InvocationService"]
+
+    Invoke --> Registry["Agent Registry"]
+    Registry --> Manifest["Agent Manifest"]
+
+    Invoke --> GraphLoader["Graph Loader"]
+    GraphLoader --> Runtime["LangGraph Runtime"]
+
+    Invoke --> Checkpoint["Checkpoint Factory"]
+    Checkpoint --> NoneBackend["None Backend"]
+    Checkpoint --> MemoryBackend["Memory Backend"]
+
+    Runtime --> AgentGraph["Agent Workflow Graph"]
+
+    AgentGraph --> ToolGateway["ToolGateway Policy Layer"]
+    ToolGateway --> ToolRegistry["ToolRegistry"]
+    ToolRegistry --> ToolSpec["ToolSpec"]
+
+    Invoke --> TraceMeta["Trace Metadata Builder"]
+    TraceMeta --> LangSmith["LangSmith Tracing Skeleton"]
+
+    Runtime --> Response["RuntimeResponse"]
+    Response --> Client
+```
 
 ## Layers
 
-- Runtime API: thin HTTP facade for health, version, invocation, and future
-  administrative operations.
-- Agent Registry: loads and validates `agent.yaml` manifests before agents are
-  exposed to runtime processes.
-- LangGraph Runtime: future graph execution adapter responsible for stateful
-  workflow orchestration.
-- Tool Gateway: the only approved path for tool execution, policy checks, audit
-  metadata, and fake-tool testing.
-- Memory: scoped storage contracts for session, user, and domain memory.
-- RAG: retrieval contracts, indexing boundaries, and citation expectations.
-- Safety: guardrails, policy enforcement, review routing, and refusal behavior.
-- Observability: tracing, structured events, run metadata, and future LangSmith
-  integration.
-- Eval: regression datasets, scenario runners, acceptance thresholds, and
-  release gates.
+- Runtime API: thin HTTP facade for health, version, agent discovery,
+  manifests, and invocation.
+- Agent Registry: loads and validates `agent.yaml` manifests.
+- Core contracts: Pydantic runtime, manifest, run lifecycle, citation, and tool
+  call record contracts.
+- LangGraph Runtime: deterministic graph execution behind stable platform
+  contracts.
+- Checkpointing: optional LangGraph execution state checkpointer with `none`
+  and in-memory backends.
+- Observability: trace metadata builder and LangSmith skeleton.
+- Eval: local regression datasets, evaluator contracts, and runner.
+- Tool contracts: `ToolSpec` capability metadata and in-memory `ToolRegistry`.
+- Tool Gateway policy: policy-only access decisions, no execution.
 
-Apps should expose these capabilities without owning domain-neutral logic.
-Packages should own reusable contracts and runtime behavior. Agents should own
-domain-specific behavior declarations and tests.
+Apps expose APIs, CLIs, or workers. Packages own reusable primitives. Agents own
+domain-specific behavior declarations, graph code, sample specs, evals, and
+tests.
 
-## Core Runtime Contracts
+## Request Lifecycle
 
-PR-002 establishes the serialized contract layer before any real agent
-execution exists. `snp_agent_core.contracts` defines the Pydantic models that
-future runtime adapters will consume and produce:
+```mermaid
+sequenceDiagram
+    participant Client as Client / n8n / Zalo
+    participant API as Runtime API
+    participant MW as RequestIdMiddleware
+    participant Service as InvocationService
+    participant Registry as Agent Registry
+    participant Graph as LangGraph Runtime
+    participant Gateway as ToolGateway
+    participant LS as LangSmith Metadata
 
-- `AgentManifest` validates versioned agent declarations from `agent.yaml`.
-- `RuntimeRequest` is the inbound message and routing envelope accepted by the
-  platform runtime.
-- `RuntimeContext` is the normalized execution context shared between runtime
-  components.
-- `RuntimeResponse` is the outbound result envelope with run status, answer,
-  citations, tool call records, trace linkage, handoff state, and metadata.
-- `Citation`, `ToolCallRecord`, and `AgentRunStatus` keep provenance, tool
-  auditing, and run state serializable without binding core packages to a graph
-  engine or provider SDK.
-
-These contracts are boundaries, not execution code. LangGraph, LangChain, and
-LangSmith integrations should be introduced behind these models in later PRs.
-
-## Runtime API Responsibilities
-
-PR-003 adds a production-shaped Runtime API shell around the core contracts. The
-API is responsible for HTTP routing, request/response validation, manifest
-discovery through the file-backed registry, and structured API errors.
-
-The Runtime API is not responsible for graph execution, direct LLM calls, or
-direct tool calls. `POST /v1/agents/{agent_id}/invoke` validates the agent and
-request body, then returns a scaffold `RuntimeResponse` until a later PR adds a
-runtime adapter behind the same contract.
-
-## LangGraph Runtime
-
-PR-004 introduces the first minimal LangGraph-backed execution path. Agent
-manifests declare a runtime type, graph builder import path, and state schema
-import path. The Runtime API loads the manifest, delegates graph loading to
-`snp_agent_core.graph`, and returns the graph result as a `RuntimeResponse`.
-
-The current customer service graph is deterministic and does not call LLMs,
-tools, external APIs, persistence, or LangSmith. The graph runner is the
-extension point where later PRs can add checkpointers, tracing, tool mediation,
-memory, RAG, and safety enforcement behind the same API contract.
-
-## Checkpointing
-
-PR-008 adds a checkpoint abstraction for LangGraph execution state. Runtime
-processes select a backend with `SNP_CHECKPOINT_BACKEND`; the default `none`
-backend preserves stateless execution, while `memory` enables an in-process
-LangGraph checkpointer for local development and tests.
-
-Checkpointing is graph execution state, not long-term semantic memory. It does
-not add RAG, tools, a Memory Manager, safety, real LLM calls, or database
-persistence. When enabled, the graph runner passes `thread_id` into LangGraph
-execution config so the caller-owned conversation key becomes the continuity
-key for future resume, human-in-the-loop, and durable workflow features.
-
-Postgres checkpointing will come later behind
-`snp_agent_core.checkpointing.build_checkpointer()` after persistence contracts
-are introduced.
-
-## Tool Specifications
-
-PR-009 introduces domain-neutral tool contracts in `snp_agent_tools`.
-`ToolSpec` describes a capability: name, description, risk level, execution
-mode, input/output schemas, required scopes, approval requirements, timeout,
-tags, and metadata. `ToolRegistry` stores available specs in memory and raises
-clear errors for duplicate or unknown tool names.
-
-This is not tool execution. There is no Tool Gateway, no direct external API
-call, no TMS/CRM/Billing integration, no database persistence, and no safety or
-memory policy enforcement in PR-009. Domain-specific sample specs may live under
-agents, while `snp_agent_tools` remains reusable and domain-neutral.
-
-The future Tool Gateway will consume `ToolSpec` metadata to validate inputs,
-enforce approval and policy, audit calls, and route execution through fake or
-real integrations.
-
-## Tool Gateway Policy
-
-PR-010 introduces a policy-only `ToolGateway` skeleton. The gateway takes a
-`ToolRegistry` and `ToolPolicy`, evaluates `ToolAccessRequest`, and returns a
-structured `ToolAccessResult` with `allowed`, `denied`, or `requires_approval`.
-
-This is still not tool execution. The gateway does not call external APIs,
-invoke adapters, run fake tools, persist audit records, or enforce a safety
-pipeline. It only establishes the domain-neutral policy boundary that later
-execution adapters will sit behind.
-
-## Observability
-
-PR-005 adds a LangSmith tracing skeleton without dashboards or evals. The
-Runtime API builds a `RuntimeContext`, derives standard trace metadata from the
-context and `AgentManifest`, and passes that metadata into graph execution
-config. Tracing remains disabled by default and local tests do not require
-LangSmith credentials.
-
-## Runtime Execution Lifecycle
-
-PR-007 introduces a clean invocation lifecycle before tools, memory, RAG,
-safety, or real LLM integrations are added.
-
-**Three runtime identifiers** — each with a distinct scope and owner:
-
-| Identifier | Owner | Scope | Purpose |
-|---|---|---|---|
-| `thread_id` | caller | conversation (many turns) | context continuity, future memory key |
-| `request_id` | middleware or caller | one HTTP request | HTTP-level correlation |
-| `run_id` | platform (`InvocationService`) | one graph execution | execution audit, future persistence key |
-
-**`RequestIdMiddleware`** reads `X-Request-ID` from the inbound request or
-generates a UUID4. The ID is written to `request.state.request_id` and echoed
-back in the `X-Request-ID` response header for caller correlation.
-
-**`InvocationService`** extracts all execution orchestration from the route
-handler: manifest loading, `run_id` generation, `RuntimeContext` construction,
-wall-clock timing, trace metadata, and error mapping. Route handlers read the
-request ID from middleware state and delegate everything else to the service.
-
-**`AgentRun`** (in `snp_agent_core.contracts.runs`) is the typed lifecycle
-record for one invocation. It is constructed but not yet persisted. The
-`run_id`, `request_id`, and `duration_ms` surface in
-`RuntimeResponse.metadata`. Future PRs will persist the full `AgentRun` record.
-
-Every `RuntimeResponse` from a successful invocation now contains:
-
-```json
-{
-  "metadata": {
-    "run_id": "<uuid>",
-    "request_id": "<uuid-or-caller-supplied>",
-    "duration_ms": 12
-  }
-}
+    Client->>API: POST /v1/agents/{agent_id}/invoke
+    API->>MW: Read or generate X-Request-ID
+    MW->>Service: request_id + RuntimeRequest
+    Service->>Registry: Load agent manifest
+    Registry-->>Service: AgentManifest
+    Service->>Service: Generate run_id
+    Service->>LS: Build trace metadata
+    Service->>Graph: Execute graph with thread_id
+    Graph->>Gateway: Check tool access policy if needed
+    Gateway-->>Graph: allowed / denied / requires_approval
+    Graph-->>Service: RuntimeResponse
+    Service->>Service: Add run_id/request_id/duration_ms
+    Service-->>API: RuntimeResponse
+    API-->>Client: Response + X-Request-ID
 ```
 
-See [runtime-lifecycle.md](../runtime-lifecycle.md) for the full invocation
-flow, identifier semantics, and where future integrations attach.
-See [checkpointing.md](../checkpointing.md) for checkpoint configuration and
-semantics.
-See [tools.md](../tools.md) for tool specification and registry semantics.
-See [tool-gateway.md](../tool-gateway.md) for tool policy gateway semantics.
+The current customer service graph is deterministic. It returns a stable hello
+answer and does not call an LLM, a retrieval system, a tool adapter, or an
+external API.
+
+## Runtime Identifiers
+
+| Identifier | Owner | Scope | Current use |
+|---|---|---|---|
+| `thread_id` | Caller | Conversation | Continuity key for graph config and future memory/resume flows |
+| `request_id` | Caller or middleware | One HTTP request | HTTP correlation, response header, response metadata |
+| `run_id` | Platform | One graph execution | Execution correlation and future persisted run key |
+
+See [runtime-lifecycle.md](../runtime-lifecycle.md) for the full lifecycle.
+
+## Tool Governance
+
+```mermaid
+flowchart TD
+    Agent["Agent Workflow"] --> Request["ToolAccessRequest"]
+    Request --> Gateway["ToolGateway"]
+
+    Gateway --> Exists{"Tool exists?"}
+    Exists -- No --> DeniedUnknown["Denied: unknown tool"]
+    Exists -- Yes --> DenyList{"In denied_tools?"}
+
+    DenyList -- Yes --> DeniedPolicy["Denied: explicitly denied"]
+    DenyList -- No --> AllowList{"In allowed_tools?"}
+
+    AllowList -- No --> DefaultDecision["Apply default decision"]
+    AllowList -- Yes --> ScopeCheck{"Required scopes present?"}
+
+    ScopeCheck -- No --> DeniedScope["Denied: missing scopes"]
+    ScopeCheck -- Yes --> Approval{"Approval required?"}
+
+    Approval -- Yes --> RequiresApproval["Requires approval"]
+    Approval -- No --> Allowed["Allowed"]
+```
+
+`ToolGateway` currently returns policy decisions only. It does not execute tools
+or call third-party systems.
+
+## Current Non-Goals
+
+- No real LLM calls yet.
+- No RAG yet.
+- No real tool execution yet.
+- No production Zalo, TMS, CRM, Billing, or support integrations yet.
+- No database persistence yet.
+- No Memory Manager yet.
+- No Safety pipeline yet.
+
+## PR History
+
+- PR-001: monorepo scaffold
+- PR-002: core runtime contracts
+- PR-003: runtime API shell
+- PR-004: LangGraph hello runtime
+- PR-005: LangSmith tracing skeleton
+- PR-006: local regression eval skeleton
+- PR-007: runtime execution lifecycle
+- PR-008: checkpoint abstraction
+- PR-009: ToolSpec and ToolRegistry
+- PR-010: ToolGateway policy skeleton
+
+## Deeper Docs
+
+- [Runtime flow](runtime-flow.md)
+- [Request sequence](request-sequence.md)
+- [Tool governance flow](tool-governance-flow.md)
+- [Runtime lifecycle](../runtime-lifecycle.md)
+- [Checkpointing](../checkpointing.md)
+- [Tool specifications](../tools.md)
+- [Tool Gateway policy](../tool-gateway.md)
+- [Agent development guide](../agent-development-guide.md)

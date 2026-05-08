@@ -29,6 +29,28 @@ Decision order:
 5. Tool-level or policy-level approval requirements return `requires_approval`.
 6. Otherwise the tool is allowed.
 
+```mermaid
+flowchart TD
+    Agent["Agent Workflow"] --> Request["ToolAccessRequest"]
+    Request --> Gateway["ToolGateway"]
+
+    Gateway --> Exists{"Tool exists?"}
+    Exists -- No --> DeniedUnknown["Denied: unknown tool"]
+    Exists -- Yes --> DenyList{"In denied_tools?"}
+
+    DenyList -- Yes --> DeniedPolicy["Denied: explicitly denied"]
+    DenyList -- No --> AllowList{"In allowed_tools?"}
+
+    AllowList -- No --> DefaultDecision["Apply default decision"]
+    AllowList -- Yes --> ScopeCheck{"Required scopes present?"}
+
+    ScopeCheck -- No --> DeniedScope["Denied: missing scopes"]
+    ScopeCheck -- Yes --> Approval{"Approval required?"}
+
+    Approval -- Yes --> RequiresApproval["Requires approval"]
+    Approval -- No --> Allowed["Allowed"]
+```
+
 ## Explicitly Not Execution
 
 PR-010 does not add:
@@ -44,3 +66,6 @@ PR-010 does not add:
 
 Execution adapters will come later behind the gateway boundary. Until then, the
 gateway is only policy decision logic.
+
+See [architecture/tool-governance-flow.md](architecture/tool-governance-flow.md)
+for the same flow in architecture context.
