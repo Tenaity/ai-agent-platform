@@ -26,7 +26,7 @@ runtime apps.
 - PR-004: introduce a minimal LangGraph-backed hello runtime.
 - PR-005: add a LangSmith tracing skeleton for graph executions.
 - PR-006: add local-first regression evaluation skeleton with deterministic evaluators.
-- PR-007: add Tool Gateway contracts with fake-tool integration tests.
+- PR-007: introduce runtime execution lifecycle — request IDs, run IDs, InvocationService, and AgentRun contracts.
 
 LangChain, LangGraph, and LangSmith dependencies are intentionally deferred
 until the runtime contracts are ready to absorb them cleanly.

@@ -75,3 +75,45 @@ Runtime API builds a `RuntimeContext`, derives standard trace metadata from the
 context and `AgentManifest`, and passes that metadata into graph execution
 config. Tracing remains disabled by default and local tests do not require
 LangSmith credentials.
+
+## Runtime Execution Lifecycle
+
+PR-007 introduces a clean invocation lifecycle before tools, memory, RAG,
+safety, or real LLM integrations are added.
+
+**Three runtime identifiers** — each with a distinct scope and owner:
+
+| Identifier | Owner | Scope | Purpose |
+|---|---|---|---|
+| `thread_id` | caller | conversation (many turns) | context continuity, future memory key |
+| `request_id` | middleware or caller | one HTTP request | HTTP-level correlation |
+| `run_id` | platform (`InvocationService`) | one graph execution | execution audit, future persistence key |
+
+**`RequestIdMiddleware`** reads `X-Request-ID` from the inbound request or
+generates a UUID4. The ID is written to `request.state.request_id` and echoed
+back in the `X-Request-ID` response header for caller correlation.
+
+**`InvocationService`** extracts all execution orchestration from the route
+handler: manifest loading, `run_id` generation, `RuntimeContext` construction,
+wall-clock timing, trace metadata, and error mapping. Route handlers read the
+request ID from middleware state and delegate everything else to the service.
+
+**`AgentRun`** (in `snp_agent_core.contracts.runs`) is the typed lifecycle
+record for one invocation. It is constructed but not yet persisted. The
+`run_id`, `request_id`, and `duration_ms` surface in
+`RuntimeResponse.metadata`. Future PRs will persist the full `AgentRun` record.
+
+Every `RuntimeResponse` from a successful invocation now contains:
+
+```json
+{
+  "metadata": {
+    "run_id": "<uuid>",
+    "request_id": "<uuid-or-caller-supplied>",
+    "duration_ms": 12
+  }
+}
+```
+
+See [runtime-lifecycle.md](../runtime-lifecycle.md) for the full invocation
+flow, identifier semantics, and where future integrations attach.

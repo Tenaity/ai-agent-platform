@@ -12,6 +12,7 @@ from snp_agent_core.contracts.agent_manifest import (
     ToolPolicyManifest,
 )
 from snp_agent_core.contracts.citations import Citation
+from snp_agent_core.contracts.runs import AgentRun, AgentRunError, AgentRunTiming
 from snp_agent_core.contracts.runtime import (
     RuntimeContext,
     RuntimeHealth,
@@ -23,7 +24,10 @@ from snp_agent_core.contracts.tools import ToolCallRecord
 
 __all__ = [
     "AgentManifest",
+    "AgentRun",
+    "AgentRunError",
     "AgentRunStatus",
+    "AgentRunTiming",
     "Citation",
     "EvalManifest",
     "MemoryManifest",

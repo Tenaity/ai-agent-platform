@@ -1,4 +1,12 @@
-"""Tests for the Runtime API shell."""
+"""Tests for the Runtime API — PR-007 execution lifecycle.
+
+Covers:
+- All existing routes (health, version, agents, manifest, invoke)
+- X-Request-ID middleware behaviour (generate, preserve, echo in response)
+- RuntimeResponse.metadata lifecycle fields (run_id, request_id, duration_ms)
+- Error cases (unknown agent 404, invalid payload 422)
+- No LangSmith credentials required
+"""
 
 from typing import Any
 
@@ -26,6 +34,11 @@ def valid_runtime_request() -> dict[str, Any]:
         "message": "How do I reset my password?",
         "metadata": {"locale": "en-US"},
     }
+
+
+# ---------------------------------------------------------------------------
+# Existing route tests (updated for new metadata shape)
+# ---------------------------------------------------------------------------
 
 
 def test_health_returns_ok() -> None:
@@ -89,16 +102,18 @@ def test_invoke_agent_works_without_langsmith_env(monkeypatch: Any) -> None:
     )
 
     assert response.status_code == 200
-    assert response.json() == {
-        "thread_id": "thread_456",
-        "status": "completed",
-        "answer": HELLO_ANSWER,
-        "citations": [],
-        "tool_calls": [],
-        "trace_id": None,
-        "handoff_required": False,
-        "metadata": {},
-    }
+    body = response.json()
+    assert body["thread_id"] == "thread_456"
+    assert body["status"] == "completed"
+    assert body["answer"] == HELLO_ANSWER
+    assert body["citations"] == []
+    assert body["tool_calls"] == []
+    assert body["trace_id"] is None
+    assert body["handoff_required"] is False
+    # metadata must now carry lifecycle fields (not empty)
+    assert "run_id" in body["metadata"]
+    assert "request_id" in body["metadata"]
+    assert "duration_ms" in body["metadata"]
 
 
 def test_invoke_agent_does_not_return_secrets(monkeypatch: Any) -> None:
@@ -113,6 +128,43 @@ def test_invoke_agent_does_not_return_secrets(monkeypatch: Any) -> None:
 
     assert response.status_code == 200
     assert "secret-test-key" not in response.text
+
+
+def test_existing_agent_graph_execution_failure_returns_clean_failed_response(
+    monkeypatch: Any,
+) -> None:
+    """Graph execution failures return a clean failed RuntimeResponse."""
+
+    class FailingGraphRunner:
+        def invoke(self, *_args: Any, **_kwargs: Any) -> None:
+            raise RuntimeError("sensitive graph failure details")
+
+    monkeypatch.setattr(
+        "runtime_api.services.invocation_service.load_graph_runner",
+        lambda _manifest: FailingGraphRunner(),
+    )
+
+    caller_id = "graph-failure-request-123"
+    response = create_client().post(
+        "/v1/agents/customer_service/invoke",
+        json=valid_runtime_request(),
+        headers={"X-Request-ID": caller_id},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["thread_id"] == "thread_456"
+    assert body["status"] == "failed"
+    assert body["answer"] is None
+    assert body["metadata"]["error_code"] == "graph_execution_error"
+    assert isinstance(body["metadata"]["run_id"], str)
+    assert len(body["metadata"]["run_id"]) > 0
+    assert body["metadata"]["request_id"] == caller_id
+    assert isinstance(body["metadata"]["duration_ms"], int)
+    assert body["metadata"]["duration_ms"] >= 0
+    assert "Traceback" not in response.text
+    assert "RuntimeError" not in response.text
+    assert "sensitive graph failure details" not in response.text
 
 
 def test_unknown_agent_returns_structured_404() -> None:
@@ -150,3 +202,120 @@ def test_invalid_runtime_request_returns_422() -> None:
     response = create_client().post("/v1/agents/customer_service/invoke", json=payload)
 
     assert response.status_code == 422
+
+
+# ---------------------------------------------------------------------------
+# PR-007: X-Request-ID middleware tests
+# ---------------------------------------------------------------------------
+
+
+def test_request_id_is_generated_when_header_absent() -> None:
+    """A UUID request_id is generated when X-Request-ID is not in the request."""
+
+    response = create_client().post(
+        "/v1/agents/customer_service/invoke",
+        json=valid_runtime_request(),
+    )
+
+    assert response.status_code == 200
+    request_id = response.headers.get("X-Request-ID")
+    assert request_id is not None
+    assert len(request_id) == 36  # UUID4 canonical form
+
+
+def test_request_id_is_preserved_when_provided() -> None:
+    """A caller-supplied X-Request-ID is preserved and echoed back unchanged."""
+
+    caller_id = "my-gateway-request-abc123"
+
+    response = create_client().post(
+        "/v1/agents/customer_service/invoke",
+        json=valid_runtime_request(),
+        headers={"X-Request-ID": caller_id},
+    )
+
+    assert response.status_code == 200
+    assert response.headers.get("X-Request-ID") == caller_id
+
+
+def test_request_id_is_returned_in_response_header() -> None:
+    """X-Request-ID header is always present in invoke responses."""
+
+    response = create_client().post(
+        "/v1/agents/customer_service/invoke",
+        json=valid_runtime_request(),
+    )
+
+    assert "X-Request-ID" in response.headers
+
+
+def test_request_id_header_present_on_health_endpoint() -> None:
+    """Middleware attaches X-Request-ID to all routes, including health."""
+
+    response = create_client().get("/health")
+
+    assert response.status_code == 200
+    assert "X-Request-ID" in response.headers
+
+
+# ---------------------------------------------------------------------------
+# PR-007: RuntimeResponse metadata lifecycle fields
+# ---------------------------------------------------------------------------
+
+
+def test_invoke_response_metadata_contains_run_id() -> None:
+    """RuntimeResponse.metadata includes a non-empty run_id string."""
+
+    response = create_client().post(
+        "/v1/agents/customer_service/invoke",
+        json=valid_runtime_request(),
+    )
+
+    assert response.status_code == 200
+    run_id = response.json()["metadata"]["run_id"]
+    assert isinstance(run_id, str)
+    assert len(run_id) > 0
+
+
+def test_invoke_response_metadata_contains_request_id() -> None:
+    """RuntimeResponse.metadata.request_id matches the response header."""
+
+    caller_id = "correlation-xyz-456"
+
+    response = create_client().post(
+        "/v1/agents/customer_service/invoke",
+        json=valid_runtime_request(),
+        headers={"X-Request-ID": caller_id},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["metadata"]["request_id"] == caller_id
+    assert response.headers["X-Request-ID"] == caller_id
+
+
+def test_invoke_response_metadata_contains_duration_ms() -> None:
+    """RuntimeResponse.metadata.duration_ms is a non-negative integer."""
+
+    response = create_client().post(
+        "/v1/agents/customer_service/invoke",
+        json=valid_runtime_request(),
+    )
+
+    assert response.status_code == 200
+    duration_ms = response.json()["metadata"]["duration_ms"]
+    assert isinstance(duration_ms, int)
+    assert duration_ms >= 0
+
+
+def test_consecutive_invocations_have_unique_run_ids() -> None:
+    """Each invocation generates a distinct run_id even for identical requests."""
+
+    client = create_client()
+    payload = valid_runtime_request()
+
+    r1 = client.post("/v1/agents/customer_service/invoke", json=payload)
+    r2 = client.post("/v1/agents/customer_service/invoke", json=payload)
+
+    assert r1.status_code == 200
+    assert r2.status_code == 200
+    assert r1.json()["metadata"]["run_id"] != r2.json()["metadata"]["run_id"]
