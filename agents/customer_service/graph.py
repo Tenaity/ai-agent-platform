@@ -18,7 +18,7 @@ def generate_answer(_state: CustomerServiceState) -> dict[str, str]:
     return {"final_answer": HELLO_ANSWER}
 
 
-def build_graph() -> Any:
+def build_graph(checkpointer: Any | None = None) -> Any:
     """Build the minimal customer service LangGraph workflow.
 
     This graph intentionally has one deterministic node. Future PRs can replace
@@ -30,4 +30,4 @@ def build_graph() -> Any:
     graph.add_node("generate_answer", cast(Any, generate_answer))
     graph.set_entry_point("generate_answer")
     graph.add_edge("generate_answer", END)
-    return graph.compile()
+    return graph.compile(checkpointer=checkpointer)

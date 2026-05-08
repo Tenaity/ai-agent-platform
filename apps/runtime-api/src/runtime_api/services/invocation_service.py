@@ -29,6 +29,8 @@ from typing import Any
 
 from runtime_api.errors import AgentNotFoundError
 from runtime_api.registry.file_agent_registry import FileAgentRegistry
+from snp_agent_core.checkpointing import CheckpointConfig, build_checkpointer
+from snp_agent_core.config.settings import Settings
 from snp_agent_core.contracts import RuntimeContext, RuntimeRequest, RuntimeResponse
 from snp_agent_core.contracts.runs import AgentRun, AgentRunError, AgentRunTiming
 from snp_agent_core.contracts.status import AgentRunStatus
@@ -44,10 +46,11 @@ class InvocationService:
     lives in the registry and graph runner, both of which are safe to reuse.
     """
 
-    def __init__(self, registry: FileAgentRegistry) -> None:
+    def __init__(self, registry: FileAgentRegistry, settings: Settings | None = None) -> None:
         """Create the service with an already-initialised agent registry."""
 
         self._registry = registry
+        self._settings = settings or Settings()
 
     def invoke(
         self,
@@ -99,7 +102,16 @@ class InvocationService:
         )
 
         trace_metadata = build_trace_metadata(context=context, agent_manifest=manifest)
-        runner = load_graph_runner(manifest)
+        checkpoint_config = CheckpointConfig(
+            backend=self._settings.checkpoint_backend,
+            namespace=self._settings.checkpoint_namespace,
+        )
+        checkpointer = build_checkpointer(checkpoint_config)
+        runner = load_graph_runner(
+            manifest,
+            checkpointer=checkpointer,
+            checkpoint_namespace=checkpoint_config.namespace,
+        )
 
         started_at = datetime.now(UTC)
 

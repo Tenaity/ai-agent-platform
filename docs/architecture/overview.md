@@ -68,6 +68,23 @@ tools, external APIs, persistence, or LangSmith. The graph runner is the
 extension point where later PRs can add checkpointers, tracing, tool mediation,
 memory, RAG, and safety enforcement behind the same API contract.
 
+## Checkpointing
+
+PR-008 adds a checkpoint abstraction for LangGraph execution state. Runtime
+processes select a backend with `SNP_CHECKPOINT_BACKEND`; the default `none`
+backend preserves stateless execution, while `memory` enables an in-process
+LangGraph checkpointer for local development and tests.
+
+Checkpointing is graph execution state, not long-term semantic memory. It does
+not add RAG, tools, a Memory Manager, safety, real LLM calls, or database
+persistence. When enabled, the graph runner passes `thread_id` into LangGraph
+execution config so the caller-owned conversation key becomes the continuity
+key for future resume, human-in-the-loop, and durable workflow features.
+
+Postgres checkpointing will come later behind
+`snp_agent_core.checkpointing.build_checkpointer()` after persistence contracts
+are introduced.
+
 ## Observability
 
 PR-005 adds a LangSmith tracing skeleton without dashboards or evals. The
@@ -117,3 +134,5 @@ Every `RuntimeResponse` from a successful invocation now contains:
 
 See [runtime-lifecycle.md](../runtime-lifecycle.md) for the full invocation
 flow, identifier semantics, and where future integrations attach.
+See [checkpointing.md](../checkpointing.md) for checkpoint configuration and
+semantics.
