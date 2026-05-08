@@ -37,6 +37,28 @@ PR-004 graphs must remain deterministic and local. Do not add real LLM provider
 calls, real tools, persistence, or LangSmith tracing until the platform
 contracts for those concerns exist.
 
+## Tool Specs
+
+Agents may declare domain-specific sample tool specs in code, but PR-009 specs
+are capability metadata only. A `ToolSpec` describes what a tool can do, what
+schemas it accepts and returns, which scopes it requires, and what risk or
+approval posture it has.
+
+Sample customer service specs live in `agents/customer_service/tools.py`.
+They do not include execution functions and must not call real TMS, CRM,
+Billing, support, or other third-party systems.
+
+Reusable contracts and registry behavior live in `snp_agent_tools`:
+
+- `ToolSpec`
+- `ToolRiskLevel`
+- `ToolExecutionMode`
+- `ToolRegistry`
+
+The future Tool Gateway will be responsible for validation, policy enforcement,
+approval checks, audit records, and execution routing. Agent code should not
+call tools directly.
+
 ## Runtime Contract Examples
 
 Runtime adapters receive a `RuntimeRequest` after the platform has selected an
