@@ -10,8 +10,12 @@ from snp_agent_tools.gateway import ToolGateway
 from snp_agent_tools.policy import ToolAccessDecision, ToolAccessRequest
 
 
-class PolicyAwareToolExecutor:
-    """Apply ToolGateway policy before delegating to a ToolExecutor."""
+class PolicyAwareToolExecutor(ToolExecutor):
+    """Apply ToolGateway policy before delegating to a ToolExecutor.
+
+    Implements ``ToolExecutor`` so it can be composed with other executor
+    wrappers such as ``AuditAwareToolExecutor``.
+    """
 
     def __init__(self, gateway: ToolGateway, executor: ToolExecutor) -> None:
         """Create a policy-aware executor wrapper."""
@@ -59,3 +63,4 @@ class PolicyAwareToolExecutor:
                 status=ToolExecutionStatus.FAILED,
                 error="Tool execution failed.",
             )
+

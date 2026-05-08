@@ -26,9 +26,11 @@ flowchart TD
 
     Runtime --> AgentGraph["Agent Workflow Graph"]
 
-    AgentGraph --> ToolGateway["ToolGateway Policy Layer"]
+    AgentGraph --> AuditWrapper["AuditAwareToolExecutor"]
+    AuditWrapper --> ToolGateway["PolicyAwareToolExecutor + ToolGateway"]
     ToolGateway --> ToolRegistry["ToolRegistry"]
     ToolRegistry --> ToolSpec["ToolSpec"]
+    AuditWrapper --> AuditSink["ToolCallAuditSink"]
 
     Invoke --> TraceMeta["Trace Metadata Builder"]
     TraceMeta --> LangSmith["LangSmith Tracing Skeleton"]
@@ -54,6 +56,9 @@ flowchart TD
 - Tool Gateway policy: policy-only access decisions, no execution.
 - Tool execution interface: `ToolExecutor` and `PolicyAwareToolExecutor`
   contracts, no real adapters.
+- Tool audit: `ToolCallAuditRecord`, `AuditAwareToolExecutor`, and
+  `InMemoryToolCallAuditSink`. Produces security/ops audit records separate
+  from LangSmith traces.
 
 Apps expose APIs, CLIs, or workers. Packages own reusable primitives. Agents own
 domain-specific behavior declarations, graph code, sample specs, evals, and
@@ -154,6 +159,7 @@ with a wrapped executor interface, but PR-012 still adds no real adapters.
 - PR-010: ToolGateway policy skeleton
 - PR-011: documentation architecture refresh
 - PR-012: tool execution interface
+- PR-013: tool call audit record + fake customer-service tool executor
 
 ## Deeper Docs
 
@@ -165,4 +171,5 @@ with a wrapped executor interface, but PR-012 still adds no real adapters.
 - [Tool specifications](../tools.md)
 - [Tool Gateway policy](../tool-gateway.md)
 - [Tool execution interface](../tool-execution.md)
+- [Tool call audit](../tool-audit.md)
 - [Agent development guide](../agent-development-guide.md)

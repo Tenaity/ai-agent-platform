@@ -73,3 +73,5 @@ See [architecture/tool-governance-flow.md](architecture/tool-governance-flow.md)
 for the same flow in architecture context.
 See [tool-execution.md](tool-execution.md) for the executor interface that
 composes with this policy layer.
+See [tool-audit.md](tool-audit.md) for the audit record layer that wraps
+the composed executor stack.

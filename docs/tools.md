@@ -4,7 +4,8 @@ PR-009 introduced domain-neutral tool contracts before tool execution exists.
 The goal is to describe available capabilities in a reusable, testable shape.
 PR-010 added a policy-only ToolGateway that uses these specs to make access
 decisions. PR-012 adds a domain-neutral execution interface, still without real
-external integrations.
+external integrations. PR-013 adds a fake customer-service tool executor and
+a tool call audit layer.
 
 ## `ToolSpec`
 
@@ -48,6 +49,20 @@ The customer service sample agent defines example specs in
 These are specs only. They do not call real TMS, CRM, billing, or support
 systems.
 
+## Customer Service Fake Tool Executor
+
+PR-013 adds `CustomerServiceFakeToolExecutor` in
+`agents/customer_service/fake_tools.py`. It implements `ToolExecutor` and
+provides deterministic, side-effect-free responses for:
+
+- `tracking_container` — returns fake container movement milestones
+- `check_booking_status` — returns fake booking status
+- `create_support_ticket` — returns a deterministic fake ticket identifier
+
+Unknown tool names return a safe `failed` result. No external API calls are
+made. This executor supports end-to-end testing of the full policy and audit
+execution path without real integrations.
+
 ## Future Tool Gateway
 
 PR-010 adds a policy-only `ToolGateway` skeleton. It uses `ToolSpec` metadata
@@ -74,5 +89,6 @@ PR-009 through PR-012 deliberately do not add:
 
 See [tool-gateway.md](tool-gateway.md) for the policy decision skeleton.
 See [tool-execution.md](tool-execution.md) for the execution interface.
+See [tool-audit.md](tool-audit.md) for the audit record layer.
 See [architecture/tool-governance-flow.md](architecture/tool-governance-flow.md)
 for the policy flow diagram.
