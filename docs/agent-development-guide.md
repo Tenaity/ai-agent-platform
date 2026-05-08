@@ -59,6 +59,12 @@ The future Tool Gateway will be responsible for validation, policy enforcement,
 approval checks, audit records, and execution routing. Agent code should not
 call tools directly.
 
+PR-010 adds the first policy-only gateway skeleton. Agents may be checked
+against `ToolPolicy` through `ToolGateway.check_access()`, but this still does
+not execute tools. Any code that needs a tool decision should consume the
+gateway result and wait for a later execution adapter PR before invoking real or
+fake integrations.
+
 ## Runtime Contract Examples
 
 Runtime adapters receive a `RuntimeRequest` after the platform has selected an

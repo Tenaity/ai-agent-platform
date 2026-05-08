@@ -102,6 +102,17 @@ The future Tool Gateway will consume `ToolSpec` metadata to validate inputs,
 enforce approval and policy, audit calls, and route execution through fake or
 real integrations.
 
+## Tool Gateway Policy
+
+PR-010 introduces a policy-only `ToolGateway` skeleton. The gateway takes a
+`ToolRegistry` and `ToolPolicy`, evaluates `ToolAccessRequest`, and returns a
+structured `ToolAccessResult` with `allowed`, `denied`, or `requires_approval`.
+
+This is still not tool execution. The gateway does not call external APIs,
+invoke adapters, run fake tools, persist audit records, or enforce a safety
+pipeline. It only establishes the domain-neutral policy boundary that later
+execution adapters will sit behind.
+
 ## Observability
 
 PR-005 adds a LangSmith tracing skeleton without dashboards or evals. The
@@ -154,3 +165,4 @@ flow, identifier semantics, and where future integrations attach.
 See [checkpointing.md](../checkpointing.md) for checkpoint configuration and
 semantics.
 See [tools.md](../tools.md) for tool specification and registry semantics.
+See [tool-gateway.md](../tool-gateway.md) for tool policy gateway semantics.

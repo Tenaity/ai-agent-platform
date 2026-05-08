@@ -79,6 +79,7 @@ A good PR has:
   - Examples: `feat(eval): PR-006 regression evaluation skeleton`, `feat(runtime): PR-007 runtime execution lifecycle`.
   - Small follow-up commits may omit the PR number when the subject is clearer without it, for example `test: cover graph execution failure response`.
 - Keep commit messages specific to the change. Mention the platform area (`runtime`, `eval`, `graph`, `docs`, etc.) when it improves reviewability.
+- For every PR, create or update `docs/pr/PR-XXX-*.md` with a GitHub-ready PR description.
 - Before pushing, run the PR acceptance checks from the user request. If a Makefile target cannot run because local tooling is missing, run the equivalent project environment command and report the blocker clearly.
 
 ## Forbidden Patterns

@@ -48,17 +48,23 @@ systems.
 
 ## Future Tool Gateway
 
-The future Tool Gateway will be the only approved path for tool execution. It
-will use `ToolSpec` metadata to enforce policy, validate inputs, check approval
-requirements, audit calls, and route to fake or real integrations.
+PR-010 adds a policy-only `ToolGateway` skeleton. It uses `ToolSpec` metadata
+and `ToolPolicy` to decide whether an agent may use a tool. The gateway returns
+`allowed`, `denied`, or `requires_approval`, but still does not execute tools.
+
+The future execution-capable Tool Gateway will be the only approved path for
+tool execution. It will use `ToolSpec` metadata to enforce policy, validate
+inputs, check approval requirements, audit calls, and route to fake or real
+integrations.
 
 PR-009 deliberately does not add:
 
 - actual tool execution
-- Tool Gateway
 - RAG
 - Memory Manager
 - Safety pipeline
 - real LLM calls
 - real third-party integrations
 - database persistence
+
+See [tool-gateway.md](tool-gateway.md) for the policy decision skeleton.
