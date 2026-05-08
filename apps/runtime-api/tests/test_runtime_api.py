@@ -130,6 +130,43 @@ def test_invoke_agent_does_not_return_secrets(monkeypatch: Any) -> None:
     assert "secret-test-key" not in response.text
 
 
+def test_existing_agent_graph_execution_failure_returns_clean_failed_response(
+    monkeypatch: Any,
+) -> None:
+    """Graph execution failures return a clean failed RuntimeResponse."""
+
+    class FailingGraphRunner:
+        def invoke(self, *_args: Any, **_kwargs: Any) -> None:
+            raise RuntimeError("sensitive graph failure details")
+
+    monkeypatch.setattr(
+        "runtime_api.services.invocation_service.load_graph_runner",
+        lambda _manifest: FailingGraphRunner(),
+    )
+
+    caller_id = "graph-failure-request-123"
+    response = create_client().post(
+        "/v1/agents/customer_service/invoke",
+        json=valid_runtime_request(),
+        headers={"X-Request-ID": caller_id},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["thread_id"] == "thread_456"
+    assert body["status"] == "failed"
+    assert body["answer"] is None
+    assert body["metadata"]["error_code"] == "graph_execution_error"
+    assert isinstance(body["metadata"]["run_id"], str)
+    assert len(body["metadata"]["run_id"]) > 0
+    assert body["metadata"]["request_id"] == caller_id
+    assert isinstance(body["metadata"]["duration_ms"], int)
+    assert body["metadata"]["duration_ms"] >= 0
+    assert "Traceback" not in response.text
+    assert "RuntimeError" not in response.text
+    assert "sensitive graph failure details" not in response.text
+
+
 def test_unknown_agent_returns_structured_404() -> None:
     """Unknown agent identifiers return a stable structured 404 response."""
 
