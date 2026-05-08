@@ -3,7 +3,8 @@
 PR-009 introduced domain-neutral tool contracts before tool execution exists.
 The goal is to describe available capabilities in a reusable, testable shape.
 PR-010 added a policy-only ToolGateway that uses these specs to make access
-decisions.
+decisions. PR-012 adds a domain-neutral execution interface, still without real
+external integrations.
 
 ## `ToolSpec`
 
@@ -57,7 +58,11 @@ The future execution-capable Tool Gateway will be the only approved path for
 tool execution. It will use `ToolSpec` metadata to validate inputs, audit calls,
 and route to fake or real integrations after policy allows access.
 
-PR-009 and PR-010 deliberately do not add:
+PR-012 introduces `ToolExecutor` and `PolicyAwareToolExecutor`. The policy-aware
+wrapper asks `ToolGateway` for permission first and delegates to a wrapped
+executor only when access is allowed.
+
+PR-009 through PR-012 deliberately do not add:
 
 - actual tool execution
 - RAG
@@ -68,5 +73,6 @@ PR-009 and PR-010 deliberately do not add:
 - database persistence
 
 See [tool-gateway.md](tool-gateway.md) for the policy decision skeleton.
+See [tool-execution.md](tool-execution.md) for the execution interface.
 See [architecture/tool-governance-flow.md](architecture/tool-governance-flow.md)
 for the policy flow diagram.

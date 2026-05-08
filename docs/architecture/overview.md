@@ -52,6 +52,8 @@ flowchart TD
 - Eval: local regression datasets, evaluator contracts, and runner.
 - Tool contracts: `ToolSpec` capability metadata and in-memory `ToolRegistry`.
 - Tool Gateway policy: policy-only access decisions, no execution.
+- Tool execution interface: `ToolExecutor` and `PolicyAwareToolExecutor`
+  contracts, no real adapters.
 
 Apps expose APIs, CLIs, or workers. Packages own reusable primitives. Agents own
 domain-specific behavior declarations, graph code, sample specs, evals, and
@@ -125,7 +127,8 @@ flowchart TD
 ```
 
 `ToolGateway` currently returns policy decisions only. It does not execute tools
-or call third-party systems.
+or call third-party systems. `PolicyAwareToolExecutor` composes gateway policy
+with a wrapped executor interface, but PR-012 still adds no real adapters.
 
 ## Current Non-Goals
 
@@ -149,6 +152,8 @@ or call third-party systems.
 - PR-008: checkpoint abstraction
 - PR-009: ToolSpec and ToolRegistry
 - PR-010: ToolGateway policy skeleton
+- PR-011: documentation architecture refresh
+- PR-012: tool execution interface
 
 ## Deeper Docs
 
@@ -159,4 +164,5 @@ or call third-party systems.
 - [Checkpointing](../checkpointing.md)
 - [Tool specifications](../tools.md)
 - [Tool Gateway policy](../tool-gateway.md)
+- [Tool execution interface](../tool-execution.md)
 - [Agent development guide](../agent-development-guide.md)

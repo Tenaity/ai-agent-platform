@@ -67,6 +67,8 @@ fake integrations.
 
 See [tools.md](tools.md) and [tool-gateway.md](tool-gateway.md) for the current
 tool contracts and policy skeleton.
+See [tool-execution.md](tool-execution.md) for the executor interface that later
+fake and real adapters will implement.
 
 ## Runtime Contract Examples
 

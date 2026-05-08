@@ -9,7 +9,7 @@ demo, or a place for product-specific business logic to live in runtime apps.
 
 ## Current Capabilities
 
-After PR-010, the platform includes:
+After PR-012, the platform includes:
 
 - A monorepo scaffold for apps, reusable packages, domain agents, prompts,
   datasets, docs, and future infrastructure.
@@ -25,6 +25,8 @@ After PR-010, the platform includes:
 - Domain-neutral `ToolSpec` contracts and an in-memory `ToolRegistry`.
 - A policy-only `ToolGateway` skeleton that returns access decisions but does
   not execute tools.
+- Domain-neutral `ToolExecutor` and `PolicyAwareToolExecutor` interfaces for
+  future execution adapters.
 
 ## Architecture
 
@@ -62,7 +64,7 @@ Current non-goals:
 
 - No real LLM calls yet.
 - No RAG yet.
-- No real tool execution yet.
+- No real tool execution adapters yet.
 - No production Zalo, TMS, CRM, Billing, or support integrations yet.
 - No database persistence yet.
 
@@ -172,11 +174,11 @@ Completed:
 - PR-008: checkpoint abstraction
 - PR-009: ToolSpec and ToolRegistry
 - PR-010: ToolGateway policy skeleton
+- PR-011: documentation architecture refresh
+- PR-012: tool execution interface
 
 Next:
 
-- PR-011: documentation architecture refresh
-- PR-012: tool execution interface
 - PR-013: safety skeleton
 - PR-014: RAG contracts
 - PR-015+: fake-tool integrations, approval workflows, durable persistence, and
@@ -192,6 +194,7 @@ Next:
 - [Checkpointing](docs/checkpointing.md)
 - [Tool specifications](docs/tools.md)
 - [Tool Gateway policy](docs/tool-gateway.md)
+- [Tool execution interface](docs/tool-execution.md)
 - [Agent development guide](docs/agent-development-guide.md)
 
 ## Architectural Guardrails
