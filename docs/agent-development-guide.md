@@ -28,14 +28,14 @@ runtime:
   state_schema: agents.customer_service.state:CustomerServiceState
 ```
 
-`build_graph()` must be a zero-argument callable that returns an object with an
-`invoke()` method, typically a compiled LangGraph `StateGraph`. The state schema
-should be a typed state object, such as a `TypedDict`, with fields needed by the
-runtime adapter and graph nodes.
+`build_graph()` accepts the optional runtime-provided `checkpointer` argument
+and returns an object with an `invoke()` method, typically a compiled LangGraph
+`StateGraph`. The state schema should be a typed state object, such as a
+`TypedDict`, with fields needed by the runtime adapter and graph nodes.
 
-PR-004 graphs must remain deterministic and local. Do not add real LLM provider
-calls, real tools, persistence, or LangSmith tracing until the platform
-contracts for those concerns exist.
+The current sample graph remains deterministic and local. Do not add real LLM
+provider calls, real tools, persistence, RAG, or production integrations until
+the platform contracts for those concerns exist.
 
 ## Tool Specs
 
@@ -64,6 +64,9 @@ against `ToolPolicy` through `ToolGateway.check_access()`, but this still does
 not execute tools. Any code that needs a tool decision should consume the
 gateway result and wait for a later execution adapter PR before invoking real or
 fake integrations.
+
+See [tools.md](tools.md) and [tool-gateway.md](tool-gateway.md) for the current
+tool contracts and policy skeleton.
 
 ## Runtime Contract Examples
 

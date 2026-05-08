@@ -1,6 +1,6 @@
 # LangGraph Checkpointing
 
-PR-008 introduces a small checkpoint abstraction for LangGraph execution state.
+PR-008 introduced a small checkpoint abstraction for LangGraph execution state.
 It gives the runtime a stable place to attach future human-in-the-loop, resume,
 durable workflow, and memory-adjacent features without coupling route handlers
 to LangGraph implementation details.
@@ -58,3 +58,6 @@ There is no database persistence in PR-008. Postgres-backed checkpointing will
 come later behind the same factory boundary, after persistence contracts and
 operational requirements are defined. This PR deliberately does not add RAG,
 tools, memory management, safety, real LLM calls, or database dependencies.
+
+See [architecture/runtime-flow.md](architecture/runtime-flow.md) for where the
+checkpoint factory sits in the runtime path.
