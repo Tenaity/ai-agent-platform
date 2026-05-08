@@ -85,6 +85,23 @@ Postgres checkpointing will come later behind
 `snp_agent_core.checkpointing.build_checkpointer()` after persistence contracts
 are introduced.
 
+## Tool Specifications
+
+PR-009 introduces domain-neutral tool contracts in `snp_agent_tools`.
+`ToolSpec` describes a capability: name, description, risk level, execution
+mode, input/output schemas, required scopes, approval requirements, timeout,
+tags, and metadata. `ToolRegistry` stores available specs in memory and raises
+clear errors for duplicate or unknown tool names.
+
+This is not tool execution. There is no Tool Gateway, no direct external API
+call, no TMS/CRM/Billing integration, no database persistence, and no safety or
+memory policy enforcement in PR-009. Domain-specific sample specs may live under
+agents, while `snp_agent_tools` remains reusable and domain-neutral.
+
+The future Tool Gateway will consume `ToolSpec` metadata to validate inputs,
+enforce approval and policy, audit calls, and route execution through fake or
+real integrations.
+
 ## Observability
 
 PR-005 adds a LangSmith tracing skeleton without dashboards or evals. The
@@ -136,3 +153,4 @@ See [runtime-lifecycle.md](../runtime-lifecycle.md) for the full invocation
 flow, identifier semantics, and where future integrations attach.
 See [checkpointing.md](../checkpointing.md) for checkpoint configuration and
 semantics.
+See [tools.md](../tools.md) for tool specification and registry semantics.

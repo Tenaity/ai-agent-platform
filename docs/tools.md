@@ -1,0 +1,64 @@
+# Tool Specifications and Registry
+
+PR-009 introduces domain-neutral tool contracts before tool execution exists.
+The goal is to describe available capabilities in a reusable, testable shape so
+future Tool Gateway work can enforce policy without changing agent code.
+
+## `ToolSpec`
+
+`ToolSpec` defines a tool capability. It includes:
+
+- stable name and description
+- risk level (`low`, `medium`, `high`, `critical`)
+- execution mode (`read`, `write`, `side_effect`)
+- input and output schemas
+- required authorization scopes
+- approval, timeout, tags, and metadata fields
+
+`ToolSpec` does not include Python callables, provider clients, credentials, or
+transport details. It is a Pydantic contract with `extra="forbid"` so tools
+remain explicit at package boundaries.
+
+## `ToolRegistry`
+
+`ToolRegistry` stores available `ToolSpec` objects in memory. It supports:
+
+- `register(spec)`
+- `get(name)`
+- `list()`
+- `exists(name)`
+
+Duplicate names raise `DuplicateToolError`. Unknown names raise
+`ToolNotFoundError`.
+
+The registry is intentionally in-memory for now. It does not persist tool
+definitions, execute tools, call APIs, or enforce runtime policies.
+
+## Customer Service Samples
+
+The customer service sample agent defines example specs in
+`agents/customer_service/tools.py`:
+
+- `tracking_container`
+- `check_booking_status`
+- `create_support_ticket`
+
+These are specs only. They do not call real TMS, CRM, billing, or support
+systems.
+
+## Future Tool Gateway
+
+The future Tool Gateway will be the only approved path for tool execution. It
+will use `ToolSpec` metadata to enforce policy, validate inputs, check approval
+requirements, audit calls, and route to fake or real integrations.
+
+PR-009 deliberately does not add:
+
+- actual tool execution
+- Tool Gateway
+- RAG
+- Memory Manager
+- Safety pipeline
+- real LLM calls
+- real third-party integrations
+- database persistence
