@@ -1,7 +1,8 @@
 # Tool Execution Interface
 
 PR-012 introduces domain-neutral tool execution contracts and an executor
-interface. It does not add real tool adapters or external integrations.
+interface. PR-013 adds `AuditAwareToolExecutor` to wrap any executor and
+produce one `ToolCallAuditRecord` per execution.
 
 ## Responsibility Split
 
@@ -10,6 +11,9 @@ interface. It does not add real tool adapters or external integrations.
   capability.
 - `PolicyAwareToolExecutor` composes both: it checks policy first, then
   delegates to a wrapped executor only when access is allowed.
+- `AuditAwareToolExecutor` wraps any executor (including
+  `PolicyAwareToolExecutor`) and produces one `ToolCallAuditRecord` per
+  execution attempt, regardless of outcome.
 
 ## Contracts
 
@@ -36,7 +40,8 @@ interface. It does not add real tool adapters or external integrations.
 
 ```mermaid
 flowchart TD
-    Request["ToolExecutionRequest"] --> Wrapper["PolicyAwareToolExecutor"]
+    Request["ToolExecutionRequest"] --> Audit["AuditAwareToolExecutor"]
+    Audit --> Wrapper["PolicyAwareToolExecutor"]
     Wrapper --> Gateway["ToolGateway.check_access"]
     Gateway --> Decision{"Decision"}
     Decision -- denied --> Denied["ToolExecutionResult: denied"]
@@ -45,11 +50,15 @@ flowchart TD
     Executor --> Result["ToolExecutionResult"]
     Executor --> Exception["Executor exception"]
     Exception --> Failed["ToolExecutionResult: failed with safe error"]
+    Denied --> AuditRecord["ToolCallAuditRecord written to sink"]
+    Approval --> AuditRecord
+    Result --> AuditRecord
+    Failed --> AuditRecord
 ```
 
 ## Explicit Non-Goals
 
-PR-012 does not add:
+PR-012 and PR-013 do not add:
 
 - real TMS, CRM, Billing, support, or third-party integrations
 - real external API calls
@@ -57,8 +66,11 @@ PR-012 does not add:
 - Memory Manager
 - Safety pipeline
 - real LLM calls
-- database persistence
+- persistent audit sink (database or log streaming)
 - tool execution inside route handlers
 
 Real adapters will come later behind the `ToolExecutor` interface after fake
 tool tests and policy enforcement are stable.
+
+See [tool-audit.md](tool-audit.md) for audit record contracts and the
+`AuditAwareToolExecutor` composition pattern.
