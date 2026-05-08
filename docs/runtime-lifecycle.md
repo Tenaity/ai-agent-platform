@@ -78,12 +78,13 @@ HTTP POST /v1/agents/{agent_id}/invoke
             2. generate run_id = UUID4
             3. build RuntimeContext(request_id=request_id, ...)
             4. build_trace_metadata(context, manifest)
-            5. load_graph_runner(manifest)         → GraphLoadError → 500
-            6. started_at = now(UTC)
-            7. runner.invoke(request)
-            8. completed_at = now(UTC)
-            9. duration_ms = (completed_at - started_at).total_ms
-            10. return RuntimeResponse + metadata{run_id, request_id, duration_ms}
+            5. build optional checkpointer from runtime settings
+            6. load_graph_runner(manifest, checkpointer) → GraphLoadError → 500
+            7. started_at = now(UTC)
+            8. runner.invoke(request)
+            9. completed_at = now(UTC)
+            10. duration_ms = (completed_at - started_at).total_ms
+            11. return RuntimeResponse + metadata{run_id, request_id, duration_ms}
 ```
 
 On any **unexpected graph exception** (not `AgentNotFoundError` or
@@ -137,12 +138,34 @@ persisted. The `run_id`, `request_id`, and `duration_ms` surface in
 
 ---
 
+## Checkpointing
+
+PR-008 adds optional LangGraph checkpointing for graph execution state. The
+runtime builds a checkpointer from `SNP_CHECKPOINT_BACKEND` and compiles graphs
+with it when enabled. The default backend is `none`, which preserves the
+stateless behavior from earlier PRs.
+
+When checkpointing is enabled, `GraphRunner` passes `thread_id` into LangGraph
+execution config as the continuity key. This lets future resume,
+human-in-the-loop, and durable workflow features attach to the same conversation
+without changing the Runtime API contract.
+
+Checkpointing is not long-term semantic memory. It stores graph execution state;
+it does not perform retrieval, summarize user facts, or introduce a Memory
+Manager. PR-008 supports only `none` and in-process `memory` backends. Postgres
+checkpointing will be added later behind the same abstraction.
+
+See [checkpointing.md](checkpointing.md) for configuration and semantics.
+
+---
+
 ## Where Future Integrations Attach
 
 | Concern | Attachment point |
 |---|---|
 | Persistence | `InvocationService.invoke()` — save `AgentRun` after graph returns |
 | LangSmith streaming | `GraphRunner.invoke()` — pass run config with trace IDs |
+| Checkpointing | `load_graph_runner()` / `GraphRunner.invoke()` — compile with checkpointer and pass `thread_id` |
 | Tool mediation | Between step 7 and 8 — Tool Gateway intercepts graph tool calls |
 | Memory | `RuntimeContext` — inject scoped memory state before graph runs |
 | Safety | Before step 7 — safety pipeline validates request and response |

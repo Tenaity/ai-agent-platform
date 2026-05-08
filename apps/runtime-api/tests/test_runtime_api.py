@@ -8,13 +8,25 @@ Covers:
 - No LangSmith credentials required
 """
 
+from collections.abc import Iterator
 from typing import Any
 
+import pytest
 from agents.customer_service.graph import HELLO_ANSWER
 from fastapi.testclient import TestClient
 
+from runtime_api.dependencies import get_settings
 from runtime_api.main import app
 from snp_agent_core.version import __version__
+
+
+@pytest.fixture(autouse=True)
+def clear_settings_cache() -> Iterator[None]:
+    """Keep environment-backed settings isolated across tests."""
+
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()
 
 
 def create_client() -> TestClient:
@@ -116,6 +128,25 @@ def test_invoke_agent_works_without_langsmith_env(monkeypatch: Any) -> None:
     assert "duration_ms" in body["metadata"]
 
 
+def test_invoke_agent_works_with_memory_checkpoint_backend(monkeypatch: Any) -> None:
+    """The invoke endpoint works when in-memory checkpointing is enabled."""
+
+    monkeypatch.setenv("SNP_CHECKPOINT_BACKEND", "memory")
+    monkeypatch.setenv("SNP_CHECKPOINT_NAMESPACE", "runtime-api-test")
+
+    response = create_client().post(
+        "/v1/agents/customer_service/invoke",
+        json=valid_runtime_request(),
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["thread_id"] == "thread_456"
+    assert body["status"] == "completed"
+    assert body["answer"] == HELLO_ANSWER
+    assert "run_id" in body["metadata"]
+
+
 def test_invoke_agent_does_not_return_secrets(monkeypatch: Any) -> None:
     """Runtime responses do not expose LangSmith credentials."""
 
@@ -141,7 +172,7 @@ def test_existing_agent_graph_execution_failure_returns_clean_failed_response(
 
     monkeypatch.setattr(
         "runtime_api.services.invocation_service.load_graph_runner",
-        lambda _manifest: FailingGraphRunner(),
+        lambda *_args, **_kwargs: FailingGraphRunner(),
     )
 
     caller_id = "graph-failure-request-123"

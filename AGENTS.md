@@ -69,6 +69,18 @@ A good PR has:
 - documentation updates
 - no unrelated refactors
 
+## Git Process
+
+- Use PR-numbered branch names: `pr-00N-short-kebab-summary`.
+  - Examples: `pr-006-regression-eval-skeleton`, `pr-007-runtime-execution-lifecycle`.
+  - Do not add tool-specific prefixes such as `codex/` unless the user explicitly asks for them.
+- Use concise commit subjects that preserve the PR number for primary feature work.
+  - Preferred format: `<type>(<scope>): PR-00N <short summary>`.
+  - Examples: `feat(eval): PR-006 regression evaluation skeleton`, `feat(runtime): PR-007 runtime execution lifecycle`.
+  - Small follow-up commits may omit the PR number when the subject is clearer without it, for example `test: cover graph execution failure response`.
+- Keep commit messages specific to the change. Mention the platform area (`runtime`, `eval`, `graph`, `docs`, etc.) when it improves reviewability.
+- Before pushing, run the PR acceptance checks from the user request. If a Makefile target cannot run because local tooling is missing, run the equivalent project environment command and report the blocker clearly.
+
 ## Forbidden Patterns
 
 - No direct LLM calls inside API route handlers.

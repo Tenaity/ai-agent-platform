@@ -25,10 +25,18 @@ class GraphRunner:
     route handlers.
     """
 
-    def __init__(self, graph: InvokableGraph) -> None:
+    def __init__(
+        self,
+        graph: InvokableGraph,
+        *,
+        checkpointing_enabled: bool = False,
+        checkpoint_namespace: str | None = None,
+    ) -> None:
         """Create a runner around an already-built invokable graph."""
 
         self._graph = graph
+        self._checkpointing_enabled = checkpointing_enabled
+        self._checkpoint_namespace = checkpoint_namespace
 
     def invoke(
         self,
@@ -37,9 +45,14 @@ class GraphRunner:
     ) -> RuntimeResponse:
         """Execute the graph and adapt the final state into a runtime response."""
 
-        config: dict[str, Any] | None = None
+        config: dict[str, Any] = {}
         if trace_metadata is not None:
-            config = {"metadata": trace_metadata}
+            config["metadata"] = trace_metadata
+        if self._checkpointing_enabled:
+            configurable: dict[str, Any] = {"thread_id": request.thread_id}
+            if self._checkpoint_namespace is not None:
+                configurable["checkpoint_ns"] = self._checkpoint_namespace
+            config["configurable"] = configurable
 
         result = self._graph.invoke(
             {
@@ -50,7 +63,7 @@ class GraphRunner:
                 "message": request.message,
                 "final_answer": None,
             },
-            config=config,
+            config=config or None,
         )
         answer = result.get("final_answer")
         return RuntimeResponse(
