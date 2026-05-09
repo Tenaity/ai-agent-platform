@@ -17,7 +17,6 @@ What ``InvocationService`` deliberately does NOT own:
 - persistence (future PR)
 - tool mediation (future Tool Gateway PR)
 - memory or RAG (future PRs)
-- safety pipeline (future PR)
 - real LLM calls (no model calls in the current graph)
 """
 
@@ -36,6 +35,14 @@ from snp_agent_core.contracts.runs import AgentRun, AgentRunError, AgentRunTimin
 from snp_agent_core.contracts.status import AgentRunStatus
 from snp_agent_core.graph import GraphLoadError, load_graph_runner
 from snp_agent_observability import build_trace_metadata
+from snp_agent_safety import (
+    RuleBasedSafetyChecker,
+    SafetyCheckRequest,
+    SafetyDecision,
+    SafetyPipeline,
+    SafetyPolicy,
+    SafetyStage,
+)
 
 
 class InvocationService:
@@ -46,11 +53,19 @@ class InvocationService:
     lives in the registry and graph runner, both of which are safe to reuse.
     """
 
-    def __init__(self, registry: FileAgentRegistry, settings: Settings | None = None) -> None:
+    def __init__(
+        self,
+        registry: FileAgentRegistry,
+        settings: Settings | None = None,
+        safety_pipeline: SafetyPipeline | None = None,
+    ) -> None:
         """Create the service with an already-initialised agent registry."""
 
         self._registry = registry
         self._settings = settings or Settings()
+        self._safety_pipeline = safety_pipeline or SafetyPipeline(
+            [RuleBasedSafetyChecker(SafetyPolicy())]
+        )
 
     def invoke(
         self,
@@ -101,6 +116,76 @@ class InvocationService:
             metadata=request.metadata,
         )
 
+        safety_result = self._safety_pipeline.check(
+            SafetyCheckRequest(
+                stage=SafetyStage.INPUT,
+                agent_id=agent_id,
+                tenant_id=request.tenant_id,
+                user_id=request.user_id,
+                channel=request.channel,
+                content=request.message,
+                request_id=request_id,
+                run_id=run_id,
+                thread_id=request.thread_id,
+                metadata=request.metadata,
+            )
+        )
+
+        started_at = datetime.now(UTC)
+
+        if safety_result.decision is SafetyDecision.BLOCKED:
+            completed_at = datetime.now(UTC)
+            duration_ms = int((completed_at - started_at).total_seconds() * 1000)
+            return RuntimeResponse(
+                thread_id=request.thread_id,
+                status=AgentRunStatus.REJECTED_BY_SAFETY,
+                answer=None,
+                citations=[],
+                tool_calls=[],
+                trace_id=None,
+                handoff_required=False,
+                metadata={
+                    "run_id": run_id,
+                    "request_id": request_id,
+                    "duration_ms": duration_ms,
+                    "safety_decision": safety_result.decision.value,
+                    "safety_severity": safety_result.severity.value,
+                    "safety_reason": safety_result.reason,
+                    "safety_flags": safety_result.flags,
+                },
+            )
+
+        if safety_result.decision is SafetyDecision.NEEDS_HUMAN_REVIEW:
+            completed_at = datetime.now(UTC)
+            duration_ms = int((completed_at - started_at).total_seconds() * 1000)
+            return RuntimeResponse(
+                thread_id=request.thread_id,
+                status=AgentRunStatus.REQUIRES_HUMAN,
+                answer=None,
+                citations=[],
+                tool_calls=[],
+                trace_id=None,
+                handoff_required=True,
+                metadata={
+                    "run_id": run_id,
+                    "request_id": request_id,
+                    "duration_ms": duration_ms,
+                    "safety_decision": safety_result.decision.value,
+                    "safety_severity": safety_result.severity.value,
+                    "safety_reason": safety_result.reason,
+                    "safety_flags": safety_result.flags,
+                },
+            )
+
+        effective_request = request
+        if (
+            safety_result.decision is SafetyDecision.REDACTED
+            and safety_result.redacted_content is not None
+        ):
+            effective_request = request.model_copy(
+                update={"message": safety_result.redacted_content}
+            )
+
         trace_metadata = build_trace_metadata(context=context, agent_manifest=manifest)
         checkpoint_config = CheckpointConfig(
             backend=self._settings.checkpoint_backend,
@@ -113,10 +198,8 @@ class InvocationService:
             checkpoint_namespace=checkpoint_config.namespace,
         )
 
-        started_at = datetime.now(UTC)
-
         try:
-            response = runner.invoke(request, trace_metadata=trace_metadata)
+            response = runner.invoke(effective_request, trace_metadata=trace_metadata)
             completed_at = datetime.now(UTC)
             duration_ms = int((completed_at - started_at).total_seconds() * 1000)
 

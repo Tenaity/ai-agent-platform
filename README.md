@@ -9,7 +9,7 @@ demo, or a place for product-specific business logic to live in runtime apps.
 
 ## Current Capabilities
 
-After PR-012, the platform includes:
+After PR-014, the platform includes:
 
 - A monorepo scaffold for apps, reusable packages, domain agents, prompts,
   datasets, docs, and future infrastructure.
@@ -27,6 +27,9 @@ After PR-012, the platform includes:
   not execute tools.
 - Domain-neutral `ToolExecutor` and `PolicyAwareToolExecutor` interfaces for
   future execution adapters.
+- A domain-neutral deterministic safety pipeline skeleton with typed contracts,
+  local rule-based checks, optional simple PII redaction, and a permissive
+  runtime input precheck.
 
 ## Architecture
 
@@ -46,6 +49,9 @@ flowchart TD
     Invoke --> Checkpoint["Checkpoint Factory"]
     Checkpoint --> NoneBackend["None Backend"]
     Checkpoint --> MemoryBackend["Memory Backend"]
+
+    Invoke --> Safety["SafetyPipeline"]
+    Safety --> SafetyChecker["RuleBasedSafetyChecker"]
 
     Runtime --> AgentGraph["Agent Workflow Graph"]
 
@@ -67,6 +73,7 @@ Current non-goals:
 - No real tool execution adapters yet.
 - No production Zalo, TMS, CRM, Billing, or support integrations yet.
 - No database persistence yet.
+- No external moderation provider or LLM judge yet.
 
 ## Runtime Request Flow
 
@@ -77,6 +84,7 @@ sequenceDiagram
     participant MW as RequestIdMiddleware
     participant Service as InvocationService
     participant Registry as Agent Registry
+    participant Safety as Safety Pipeline
     participant Graph as LangGraph Runtime
     participant Gateway as ToolGateway
     participant LS as LangSmith Metadata
@@ -87,6 +95,8 @@ sequenceDiagram
     Service->>Registry: Load agent manifest
     Registry-->>Service: AgentManifest
     Service->>Service: Generate run_id
+    Service->>Safety: Input precheck
+    Safety-->>Service: allowed / rejected_by_safety / requires_human / redacted
     Service->>LS: Build trace metadata
     Service->>Graph: Execute graph with thread_id
     Graph->>Gateway: Check tool access policy if needed
@@ -176,13 +186,13 @@ Completed:
 - PR-010: ToolGateway policy skeleton
 - PR-011: documentation architecture refresh
 - PR-012: tool execution interface
+- PR-013: tool call audit record + fake customer-service tool executor
+- PR-014: safety pipeline skeleton
 
 Next:
 
-- PR-013: safety skeleton
-- PR-014: RAG contracts
-- PR-015+: fake-tool integrations, approval workflows, durable persistence, and
-  production integration adapters
+- PR-015+: RAG contracts, memory manager, approval workflows, durable
+  persistence, provider-backed safety, and production integration adapters
 
 ## Deeper Docs
 
@@ -195,6 +205,8 @@ Next:
 - [Tool specifications](docs/tools.md)
 - [Tool Gateway policy](docs/tool-gateway.md)
 - [Tool execution interface](docs/tool-execution.md)
+- [Tool call audit](docs/tool-audit.md)
+- [Safety pipeline](docs/safety-pipeline.md)
 - [Agent development guide](docs/agent-development-guide.md)
 
 ## Architectural Guardrails
@@ -203,5 +215,6 @@ Next:
 - Public boundaries use typed contracts, usually Pydantic models.
 - Agent behavior must be versioned, testable, and evaluable.
 - Tool use must flow through Tool Gateway policy before execution exists.
+- Safety checks must be explicit runtime boundaries, not prompt-only behavior.
 - API route handlers must not call LLMs directly.
 - Secrets belong in environment variables, never source control.

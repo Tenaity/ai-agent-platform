@@ -17,7 +17,11 @@ from fastapi.testclient import TestClient
 
 from runtime_api.dependencies import get_settings
 from runtime_api.main import app
+from runtime_api.registry.file_agent_registry import FileAgentRegistry
+from runtime_api.services.invocation_service import InvocationService
+from snp_agent_core.contracts import RuntimeRequest
 from snp_agent_core.version import __version__
+from snp_agent_safety import RuleBasedSafetyChecker, SafetyPipeline, SafetyPolicy
 
 
 @pytest.fixture(autouse=True)
@@ -103,7 +107,7 @@ def test_get_agent_manifest_returns_full_manifest() -> None:
 
 
 def test_invoke_agent_works_without_langsmith_env(monkeypatch: Any) -> None:
-    """The invoke endpoint returns the customer service graph answer."""
+    """Safe input still reaches the customer service graph answer."""
 
     monkeypatch.delenv("LANGSMITH_TRACING", raising=False)
     monkeypatch.delenv("LANGSMITH_API_KEY", raising=False)
@@ -126,6 +130,41 @@ def test_invoke_agent_works_without_langsmith_env(monkeypatch: Any) -> None:
     assert "run_id" in body["metadata"]
     assert "request_id" in body["metadata"]
     assert "duration_ms" in body["metadata"]
+
+
+def test_blocked_input_returns_rejected_by_safety(monkeypatch: Any) -> None:
+    """A blocking safety precheck returns before graph execution."""
+
+    def fail_if_graph_loads(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("graph should not load after a blocked safety decision")
+
+    monkeypatch.setattr(
+        "runtime_api.services.invocation_service.load_graph_runner",
+        fail_if_graph_loads,
+    )
+
+    service = InvocationService(
+        registry=FileAgentRegistry.from_runtime_package(),
+        safety_pipeline=SafetyPipeline(
+            [RuleBasedSafetyChecker(SafetyPolicy(blocked_terms=["blocked phrase"]))]
+        ),
+    )
+    payload = valid_runtime_request()
+    payload["message"] = "This contains a blocked phrase."
+
+    response = service.invoke(
+        agent_id="customer_service",
+        request=RuntimeRequest.model_validate(payload),
+        request_id="safety-request-123",
+    )
+
+    assert response.status == "rejected_by_safety"
+    assert response.answer is None
+    assert response.metadata["request_id"] == "safety-request-123"
+    assert isinstance(response.metadata["run_id"], str)
+    assert isinstance(response.metadata["duration_ms"], int)
+    assert response.metadata["safety_decision"] == "blocked"
+    assert response.metadata["safety_flags"] == ["blocked_term"]
 
 
 def test_invoke_agent_works_with_memory_checkpoint_backend(monkeypatch: Any) -> None:
