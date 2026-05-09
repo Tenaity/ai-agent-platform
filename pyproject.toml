@@ -31,6 +31,7 @@ package = false
 [tool.pytest.ini_options]
 addopts = "--strict-markers --strict-config"
 testpaths = [
+    "apps/agent-cli/tests",
     "apps/runtime-api/tests",
     "apps/eval-runner/tests",
     "agents/customer_service/tests",
@@ -43,6 +44,7 @@ testpaths = [
 ]
 pythonpath = [
     ".",
+    "apps/agent-cli/src",
     "apps/runtime-api/src",
     "apps/eval-runner/src",
     "packages/snp_agent_core/src",
@@ -58,6 +60,7 @@ pythonpath = [
 line-length = 100
 target-version = "py311"
 src = [
+    "apps/agent-cli/src",
     "apps/runtime-api/src",
     "apps/eval-runner/src",
     "agents",
@@ -89,6 +92,8 @@ python_version = "3.11"
 strict = true
 warn_unused_configs = true
 files = [
+    "apps/agent-cli/src",
+    "apps/agent-cli/tests",
     "apps/runtime-api/src",
     "apps/runtime-api/tests",
     "apps/eval-runner/src",
@@ -107,6 +112,7 @@ files = [
 ]
 mypy_path = [
     ".",
+    "apps/agent-cli/src",
     "apps/runtime-api/src",
     "apps/eval-runner/src",
     "packages/snp_agent_core/src",

@@ -23,9 +23,19 @@ The intended flow is:
 template -> generated agent -> tests -> eval -> runtime deployment
 ```
 
-A future generator CLI can automate the copy/substitution step. Until then,
-copy a template into `agents/<agent_id>/`, replace placeholders, add tests, and
-run the standard acceptance checks.
+The local generator CLI automates the copy/substitution step:
+
+```bash
+PYTHONPATH=apps/agent-cli/src uv run python -m agent_cli.main create-agent \
+  --template agent-basic \
+  --name my_agent \
+  --domain my_domain \
+  --output-dir agents
+```
+
+Use `--dry-run` to preview the files that would be created. Generated projects
+still need review, tests, regression datasets, evals, and normal runtime
+registration decisions.
 
 ## Template Types
 
@@ -52,3 +62,4 @@ imported by framework packages and must not become production integration code.
 - Templates must not contain production secrets.
 - Templates should not add runtime behavior by themselves.
 - Examples must not be imported by packages.
+- Generator behavior should stay deterministic and avoid external services.
