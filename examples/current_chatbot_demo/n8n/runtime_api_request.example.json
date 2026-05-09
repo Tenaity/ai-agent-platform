@@ -1,13 +1,16 @@
 {
-  "tenant_id": "tenant_demo",
+  "_comment": "Normalized RuntimeRequest constructed by n8n from the Zalo webhook event. This is the payload POSTed to the Runtime API: POST /v1/agents/snp.customer_service.current_chatbot_demo/invoke",
+  "tenant_id": "tenant_snp_demo",
   "channel": "zalo",
-  "user_id": "zalo_user_123",
-  "thread_id": "zalo:zalo_user_123",
-  "message": "Can you track container ABCU1234567?",
+  "user_id": "zalo_user_123456789",
+  "thread_id": "zalo:zalo_user_123456789",
+  "message": "Cho tôi hỏi container ABCU1234567 hiện đang ở đâu?",
   "metadata": {
     "source": "n8n",
-    "workflow": "current_chatbot_demo",
-    "zalo_message_id": "zalo-message-001"
+    "workflow": "snp_zalo_chatbot_demo",
+    "zalo_message_id": "zalo-msg-001-abcd1234",
+    "zalo_oa_id": "zalo_oa_snp_demo",
+    "zalo_user_id_by_app": "zalo_user_123456789",
+    "received_at": "2026-05-09T10:00:00+07:00"
   }
 }
-

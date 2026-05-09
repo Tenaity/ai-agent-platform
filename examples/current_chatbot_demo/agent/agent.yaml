@@ -2,31 +2,53 @@ id: snp.customer_service.current_chatbot_demo
 version: 0.1.0
 owner: platform-team
 domain: customer_service
+description: >
+  Reference agent project shape for the current chatbot demo.
+  Documents the intended graph, tool boundaries, retrieval config,
+  and eval cases without implementing production integrations.
+
 runtime:
   type: langgraph
   graph: examples.current_chatbot_demo.agent.graph:build_graph
   state_schema: examples.current_chatbot_demo.agent.state:CurrentChatbotDemoState
+
 model_policy:
+  # No real LLM calls in this reference project.
+  # Set allow_real_calls: true and configure provider/model when promoting
+  # this agent to production under agents/customer_service/.
   provider: none
   model: deterministic-placeholder
   allow_real_calls: false
+
 memory: null
+
 retrieval:
+  # Future Qdrant retriever adapter (PR-019).
+  # Config fields documented in qdrant/config.example.yaml.
   provider: future-qdrant
   config: examples/current_chatbot_demo/qdrant/config.example.yaml
+
 tools:
+  # Tool names must match ToolSpec.name in the platform ToolRegistry.
+  # All tool calls must flow through ToolGateway before execution.
   allowed:
     - snp.customer_service.container_tracking
     - snp.customer_service.booking_status
     - snp.customer_service.support_ticket
   requires_gateway: true
+  requires_audit: true
+
 safety:
   policy: default
   human_review_required: false
+  # Safety precheck must happen before retrieval and tool execution.
+  # Real PII detection can be enabled by configuring the safety package.
+  pii_redaction: false
+
 observability:
   tracing: true
   project: snp.customer_service.current_chatbot_demo
+
 eval:
   dataset: examples/current_chatbot_demo/agent/evals/eval.yaml
   min_pass_rate: 1.0
-

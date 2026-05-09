@@ -4,9 +4,12 @@
     "ticket_id": "SUP-2026-0001",
     "status": "created",
     "priority": "normal",
-    "created_at": "2026-05-09T00:00:00Z"
+    "subject": "Container tracking update missing",
+    "assigned_queue": "container-ops",
+    "estimated_response_hours": 4,
+    "created_at": "2026-05-09T10:00:00+07:00",
+    "customer_reference": "ABCU1234567"
   },
   "error": null,
-  "request_id": "mock-request-id"
+  "request_id": "req-support-ticket-001"
 }
-

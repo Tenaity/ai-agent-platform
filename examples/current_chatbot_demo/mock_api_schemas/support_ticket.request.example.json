@@ -1,7 +1,10 @@
 {
   "tenant_id": "tenant_demo",
   "customer_id": "customer_123",
-  "subject": "Container tracking issue",
-  "description": "Customer reports missing tracking update.",
-  "request_id": "request_123"
+  "channel": "zalo",
+  "subject": "Container tracking update missing",
+  "description": "Customer reports that container ABCU1234567 has no tracking update for over 48 hours. Last seen event was gate_out at Cat Lai Terminal on 2026-05-07.",
+  "priority": "normal",
+  "related_reference": "ABCU1234567",
+  "request_id": "req-support-ticket-001"
 }

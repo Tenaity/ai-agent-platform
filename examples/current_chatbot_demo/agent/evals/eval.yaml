@@ -1,10 +1,53 @@
+# Reference Eval Cases — Current Chatbot Demo
+
+# This eval dataset defines reference routing cases for the placeholder graph.
+# It verifies that the graph step names exist and the documented routing
+# decisions are consistent — it does not run real LLM assertions.
+
 agent: snp.customer_service.current_chatbot_demo
 dataset: examples/current_chatbot_demo/agent/evals/current_chatbot_demo_regression_v1.jsonl
+description: >
+  Reference eval cases for the current chatbot demo agent graph.
+  These cases document expected intent routing for the placeholder graph
+  without requiring real LLM evaluation or real tool execution.
+
 cases:
+  # Tool branch: container tracking
   - id: container_tracking_reference
-    input: Track container ABCU1234567
+    input: "Track container ABCU1234567"
+    expected_intent: tool
+    expected_tool: snp.customer_service.container_tracking
     expected_path: tool_branch_future_mock_api
+
+  # Tool branch: booking status
+  - id: booking_status_reference
+    input: "What is the status of booking BK-2026-0001?"
+    expected_intent: tool
+    expected_tool: snp.customer_service.booking_status
+    expected_path: tool_branch_future_mock_api
+
+  # Tool branch: support ticket creation
+  - id: support_ticket_reference
+    input: "I need to create a support ticket for a missing container update."
+    expected_intent: tool
+    expected_tool: snp.customer_service.support_ticket
+    expected_path: tool_branch_future_mock_api
+
+  # RAG branch: policy/procedure question
   - id: opening_hours_reference
-    input: What are the support opening hours?
+    input: "What are the support opening hours?"
+    expected_intent: rag
     expected_path: rag_branch_future_qdrant
 
+  # RAG branch: general policy question
+  - id: pickup_hours_reference
+    input: "What are the container pickup hours at Cat Lai Terminal?"
+    expected_intent: rag
+    expected_path: rag_branch_future_qdrant
+
+  # Direct answer branch: out-of-scope escalation
+  - id: out_of_scope_reference
+    input: "Can you process my customs clearance?"
+    expected_intent: direct_answer
+    expected_path: answer_formatting
+    expected_answer_contains: "human review"
