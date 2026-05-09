@@ -7,9 +7,20 @@ safety-bounded agent workflows.
 This repository is a platform/framework. It is not a single chatbot, a prompt
 demo, or a place for product-specific business logic to live in runtime apps.
 
+## Framework, Projects, And Templates
+
+- Framework code lives in `packages/` and `apps/`.
+- Concrete agent projects live in `agents/`.
+- Reusable project scaffolds live in `templates/`.
+- Reference project examples live in `examples/`.
+
+Templates help new projects start from the same runtime, safety, RAG, tool, and
+eval boundaries as the framework. Examples document concrete project wiring
+without becoming framework packages.
+
 ## Current Capabilities
 
-After PR-015, the platform includes:
+After PR-016, the platform includes:
 
 - A monorepo scaffold for apps, reusable packages, domain agents, prompts,
   datasets, docs, and future infrastructure.
@@ -33,6 +44,9 @@ After PR-015, the platform includes:
 - Domain-neutral RAG contracts, a retriever interface, local/test-only
   `InMemoryRetriever`, and citation enforcement that reuses core citations and
   does not fabricate sources.
+- Reusable agent project templates for basic, RAG, tool, and full demo shapes.
+- A current chatbot demo example structure for future n8n/Zalo, Qdrant, and
+  production-like mocked API wiring.
 
 ## Architecture
 
@@ -71,6 +85,15 @@ flowchart TD
     Response --> Client
 ```
 
+## Repository Layers
+
+- `apps/`: thin runtime services and CLIs such as Runtime API and eval runner.
+- `packages/`: reusable domain-neutral framework libraries.
+- `agents/`: concrete versioned agent workflows.
+- `templates/`: scaffold files for new agent projects; not runtime code.
+- `examples/`: reference implementation structures and schemas; not packages.
+- `docs/`: architecture, lifecycle, governance, scaffold, and PR docs.
+
 Current non-goals:
 
 - No real LLM calls yet.
@@ -81,6 +104,7 @@ Current non-goals:
 - No external moderation provider or LLM judge yet.
 - No vector DB, Neo4j, SQL retrieval, document ingestion, reranking, or
   GraphRAG yet.
+- No production deployment yet.
 
 ## Runtime Request Flow
 
@@ -127,8 +151,34 @@ Identifier roles:
 - `agents/`: versioned, domain-specific agent definitions and tests.
 - `prompts/`: shared and agent-specific prompt assets.
 - `datasets/`: local regression eval datasets.
-- `docs/`: architecture, lifecycle, tool governance, ADRs, and PR descriptions.
+- `templates/`: reusable scaffolds for new agent projects.
+- `examples/`: reference implementation structures and project notes.
+- `docs/`: architecture, lifecycle, tool governance, scaffold, ADRs, and PR descriptions.
 - `infra/`: future deployment infrastructure placeholders.
+
+## Creating A New Agent From A Template
+
+Until the generator CLI exists, create a new agent manually:
+
+1. Copy one template directory into `agents/<agent_id>/`.
+2. Replace placeholders such as `{{agent_id}}`, `{{agent_module}}`, `{{owner}}`,
+   and `{{domain}}`.
+3. Rename `*.template` files to their runtime names, such as `agent.yaml` and
+   `graph.py`.
+4. Add regression datasets and tests.
+5. Run `make lint`, `make typecheck`, `make test`, and `make eval`.
+
+Template types:
+
+- `agent-basic`: minimal LangGraph workflow with no RAG or tools.
+- `agent-rag`: retrieval contract and citation enforcement structure.
+- `agent-tool`: ToolSpec, ToolGateway, executor, and audit structure.
+- `agent-full-demo`: safety + RAG + tools + eval placeholders.
+
+The current chatbot reference project lives in
+`examples/current_chatbot_demo`. It documents future Runtime API,
+customer-service agent, Qdrant retrieval, mocked API, and n8n/Zalo webhook
+wiring without implementing production integrations.
 
 ## Local Commands
 
@@ -196,12 +246,15 @@ Completed:
 - PR-013: tool call audit record + fake customer-service tool executor
 - PR-014: safety pipeline skeleton
 - PR-015: RAG contracts + citation enforcement
+- PR-016: project templates + example structure
 
 Next:
 
-- PR-016+: memory manager, approval workflows, durable persistence,
-  provider-backed safety, production retrieval adapters, and production
-  integration adapters
+- PR-017 Agent Project Generator CLI Skeleton
+- PR-018 Current Chatbot Demo Reference Project Wiring
+- PR-019 Qdrant Retriever Adapter
+- PR-020 Production-like Mock API Adapter
+- PR-021 n8n/Zalo Facade Endpoint
 
 ## Deeper Docs
 
@@ -218,6 +271,7 @@ Next:
 - [Safety pipeline](docs/safety-pipeline.md)
 - [RAG contracts](docs/rag.md)
 - [Citation enforcement](docs/citations.md)
+- [Scaffold templates](docs/scaffold-template.md)
 - [Agent development guide](docs/agent-development-guide.md)
 
 ## Architectural Guardrails
@@ -228,5 +282,7 @@ Next:
 - Tool use must flow through Tool Gateway policy before execution exists.
 - Safety checks must be explicit runtime boundaries, not prompt-only behavior.
 - RAG answers must be grounded when citation policy requires citations.
+- Templates are scaffolds, not runtime code.
+- Examples are references, not framework packages.
 - API route handlers must not call LLMs directly.
 - Secrets belong in environment variables, never source control.

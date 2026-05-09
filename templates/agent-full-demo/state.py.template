@@ -1,0 +1,16 @@
+"""Typed graph state for {{agent_id}}."""
+
+from typing import TypedDict
+
+from snp_agent_core.contracts import ToolCallRecord
+from snp_agent_rag import RetrievedChunk
+
+
+class {{state_class}}(TypedDict, total=False):
+    """State fields for full demo workflows."""
+
+    message: str
+    chunks: list[RetrievedChunk]
+    tool_calls: list[ToolCallRecord]
+    answer: str
+    grounded: bool

@@ -1,0 +1,26 @@
+id: {{agent_id}}
+version: 0.1.0
+owner: {{owner}}
+domain: {{domain}}
+runtime:
+  type: langgraph
+  graph: agents.{{agent_module}}.graph:build_graph
+  state_schema: agents.{{agent_module}}.state:{{state_class}}
+model_policy:
+  provider: none
+  model: deterministic-local
+  allow_real_calls: false
+memory: null
+retrieval: null
+tools:
+  allowed: []
+  requires_gateway: true
+safety:
+  policy: default
+  human_review_required: false
+observability:
+  tracing: true
+  project: {{agent_id}}
+eval:
+  dataset: datasets/{{agent_id}}/regression_v1.jsonl
+  min_pass_rate: 1.0

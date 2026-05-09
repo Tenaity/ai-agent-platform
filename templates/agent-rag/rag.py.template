@@ -1,0 +1,34 @@
+"""Local RAG boundary skeleton for {{agent_id}}."""
+
+from snp_agent_core.contracts import RuntimeRequest
+from snp_agent_rag import (
+    CitationEnforcer,
+    CitationPolicy,
+    GroundedAnswer,
+    InMemoryRetriever,
+    RetrievalRequest,
+    RetrievedChunk,
+)
+
+LOCAL_CHUNKS: list[RetrievedChunk] = []
+
+
+def answer_with_retrieval(request: RuntimeRequest) -> GroundedAnswer:
+    """Retrieve local fixture chunks and enforce citations."""
+
+    retrieval = InMemoryRetriever(LOCAL_CHUNKS).retrieve(
+        RetrievalRequest(
+            query=request.message,
+            agent_id="{{agent_id}}",
+            tenant_id=request.tenant_id,
+            user_id=request.user_id,
+            channel=request.channel,
+            thread_id=request.thread_id,
+        )
+    )
+    answer = "Replace this with answer synthesis after real model contracts exist."
+    return CitationEnforcer().enforce(
+        answer=answer,
+        retrieval_result=retrieval,
+        policy=CitationPolicy(require_citations=True, min_citations=1),
+    )

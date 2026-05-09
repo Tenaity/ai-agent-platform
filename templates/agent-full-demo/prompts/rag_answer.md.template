@@ -1,0 +1,5 @@
+# RAG Answer Prompt
+
+Use retrieved chunks only. Every factual answer should be backed by citations
+when citation policy requires them. If retrieval is insufficient, return an
+ungrounded result rather than inventing sources.

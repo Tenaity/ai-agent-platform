@@ -22,7 +22,17 @@ This is a platform/framework repository, not a one-off chatbot implementation.
    - Each agent should eventually define graph, prompts, tools, evals, and tests.
    - Agent behavior must be versioned and testable.
 
-4. Every agent workflow must be:
+4. Keep `templates/` as scaffolds.
+   - New agent/project patterns should be reflected in templates.
+   - Templates must not contain production secrets.
+   - Templates are not runtime code.
+
+5. Keep `examples/` as reference implementations.
+   - Examples may document concrete project wiring.
+   - Examples must not be imported by packages.
+   - Examples must not hide production integrations.
+
+6. Every agent workflow must be:
    - modular
    - traceable
    - evaluable
@@ -31,20 +41,20 @@ This is a platform/framework repository, not a one-off chatbot implementation.
    - safety-bounded
    - reusable across domains where possible
 
-5. Do not hard-code secrets.
+7. Do not hard-code secrets.
    - Use environment variables.
    - Update `.env.example` whenever new configuration is introduced.
 
-6. Prefer explicit contracts over implicit dictionaries.
+8. Prefer explicit contracts over implicit dictionaries.
    - Use Pydantic models for public configuration and runtime contracts.
    - Use typed state schemas for graph state.
    - Validate external inputs at boundaries.
 
-7. Comments and docstrings should explain intent.
+9. Comments and docstrings should explain intent.
    - Explain invariants, extension points, and non-obvious design decisions.
    - Do not add comments that merely restate obvious code.
 
-8. Testing is mandatory.
+10. Testing is mandatory.
    - Public contracts require unit tests.
    - Agent behavior requires regression tests.
    - Tool execution requires fake-tool integration tests before real integrations.

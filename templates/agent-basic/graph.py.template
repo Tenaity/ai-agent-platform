@@ -1,0 +1,30 @@
+"""Deterministic graph skeleton for {{agent_id}}."""
+
+from snp_agent_core.contracts import RuntimeRequest, RuntimeResponse
+from snp_agent_core.contracts.status import AgentRunStatus
+
+HELLO_ANSWER = "Replace this deterministic answer with agent behavior."
+
+
+class {{graph_runner_class}}:
+    """Minimal runtime-compatible graph runner."""
+
+    def invoke(self, request: RuntimeRequest, **_kwargs: object) -> RuntimeResponse:
+        """Return a deterministic response without LLM, RAG, or tools."""
+
+        return RuntimeResponse(
+            thread_id=request.thread_id,
+            status=AgentRunStatus.COMPLETED,
+            answer=HELLO_ANSWER,
+            citations=[],
+            tool_calls=[],
+            trace_id=None,
+            handoff_required=False,
+            metadata={"agent_id": "{{agent_id}}"},
+        )
+
+
+def build_graph(**_kwargs: object) -> {{graph_runner_class}}:
+    """Build the graph runner used by the runtime adapter."""
+
+    return {{graph_runner_class}}()

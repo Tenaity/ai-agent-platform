@@ -1,0 +1,28 @@
+"""Local safety structure for {{agent_id}} full demo."""
+
+from snp_agent_core.contracts import RuntimeRequest
+from snp_agent_safety import (
+    RuleBasedSafetyChecker,
+    SafetyCheckRequest,
+    SafetyCheckResult,
+    SafetyPolicy,
+    SafetyStage,
+)
+
+
+def check_local_input(request: RuntimeRequest) -> SafetyCheckResult:
+    """Run deterministic local input safety without external moderation."""
+
+    checker = RuleBasedSafetyChecker(SafetyPolicy())
+    return checker.check(
+        SafetyCheckRequest(
+            stage=SafetyStage.INPUT,
+            agent_id="{{agent_id}}",
+            tenant_id=request.tenant_id,
+            user_id=request.user_id,
+            channel=request.channel,
+            content=request.message,
+            thread_id=request.thread_id,
+            metadata=request.metadata,
+        )
+    )

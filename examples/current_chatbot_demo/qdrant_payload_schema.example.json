@@ -1,0 +1,23 @@
+{
+  "collection": "customer_service_knowledge",
+  "query": {
+    "text": "container tracking instruction",
+    "top_k": 5,
+    "filters": {
+      "tenant_id": "tenant_demo",
+      "locale": "en-US"
+    }
+  },
+  "expected_chunk_shape": {
+    "chunk_id": "string",
+    "source_id": "string",
+    "source_type": "document",
+    "title": "string",
+    "uri": "string",
+    "text": "string",
+    "score": 0.95,
+    "metadata": {
+      "document_version": "string"
+    }
+  }
+}

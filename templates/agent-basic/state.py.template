@@ -1,0 +1,10 @@
+"""Typed graph state for {{agent_id}}."""
+
+from typing import TypedDict
+
+
+class {{state_class}}(TypedDict, total=False):
+    """State fields passed between graph nodes."""
+
+    message: str
+    answer: str

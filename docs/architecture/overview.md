@@ -7,6 +7,10 @@ tool governance policy, a deterministic safety pipeline skeleton, and
 domain-neutral RAG contracts with citation enforcement. It is not a one-off
 chatbot.
 
+It also includes reusable project templates and examples so new agent projects
+can start from framework-aligned scaffolds instead of copying an existing
+domain agent by hand.
+
 ## Component Model
 
 ```mermaid
@@ -48,6 +52,27 @@ flowchart TD
     Response --> Client
 ```
 
+## Scaffold Model
+
+```mermaid
+flowchart TD
+    Templates["templates: reusable project scaffolds"] --> Agents["agents: concrete agent workflows"]
+    Templates --> Examples["examples: reference implementations"]
+
+    Packages["packages: framework libraries"] --> Apps["apps: runtime-api and eval-runner"]
+    Packages --> Agents
+    Packages --> Examples
+
+    Apps --> Agents
+    Examples --> RuntimeAPI["Runtime API"]
+    RuntimeAPI --> Packages
+```
+
+Templates are not runtime code. They define starter shapes for new projects:
+basic agents, RAG agents, tool-using agents, and full demos. Examples are
+reference implementations or integration notes. Packages remain reusable and
+domain-neutral and must not import templates or examples.
+
 ## Layers
 
 - Runtime API: thin HTTP facade for health, version, agent discovery,
@@ -74,6 +99,11 @@ flowchart TD
 - Tool audit: `ToolCallAuditRecord`, `AuditAwareToolExecutor`, and
   `InMemoryToolCallAuditSink`. Produces security/ops audit records separate
   from LangSmith traces.
+- Templates: reusable project scaffolds for basic, RAG, tool, and full demo
+  agents.
+- Examples: reference implementation structures such as
+  `examples/current_chatbot_demo`, with schemas and notes but no production
+  integrations.
 
 Apps expose APIs, CLIs, or workers. Packages own reusable primitives. Agents own
 domain-specific behavior declarations, graph code, sample specs, evals, and
@@ -181,6 +211,7 @@ marked ungrounded with missing citations instead of fabricating sources.
 - No database persistence yet.
 - No Memory Manager yet.
 - No provider-backed moderation yet.
+- No production deployment scaffolding yet.
 
 ## PR History
 
@@ -199,6 +230,7 @@ marked ungrounded with missing citations instead of fabricating sources.
 - PR-013: tool call audit record + fake customer-service tool executor
 - PR-014: safety pipeline skeleton
 - PR-015: RAG contracts + citation enforcement
+- PR-016: project templates + example structure
 
 ## Deeper Docs
 
@@ -214,4 +246,5 @@ marked ungrounded with missing citations instead of fabricating sources.
 - [Safety pipeline](../safety-pipeline.md)
 - [RAG contracts](../rag.md)
 - [Citation enforcement](../citations.md)
+- [Scaffold templates](../scaffold-template.md)
 - [Agent development guide](../agent-development-guide.md)
