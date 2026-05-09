@@ -3,8 +3,9 @@
 The SNP AI Agent Platform is layered runtime infrastructure for building
 domain-specific agents. It provides reusable contracts, graph execution
 plumbing, observability metadata, eval scaffolding, checkpoint configuration,
-tool governance policy, and a deterministic safety pipeline skeleton. It is not
-a one-off chatbot.
+tool governance policy, a deterministic safety pipeline skeleton, and
+domain-neutral RAG contracts with citation enforcement. It is not a one-off
+chatbot.
 
 ## Component Model
 
@@ -30,6 +31,9 @@ flowchart TD
     SafetyChecker --> SafetyPolicy["SafetyPolicy"]
 
     Runtime --> AgentGraph["Agent Workflow Graph"]
+    AgentGraph --> Retriever["Retriever Interface"]
+    Retriever --> RetrievalResult["RetrievalResult"]
+    RetrievalResult --> CitationEnforcer["CitationEnforcer"]
 
     AgentGraph --> AuditWrapper["AuditAwareToolExecutor"]
     AuditWrapper --> ToolGateway["PolicyAwareToolExecutor + ToolGateway"]
@@ -58,6 +62,9 @@ flowchart TD
 - Safety pipeline: domain-neutral safety contracts, policy, checker interface,
   and deterministic rule-based checker. The default runtime policy is
   permissive and performs no external calls.
+- RAG contracts: retrieval request/result/chunk contracts, retriever interface,
+  local-only in-memory retriever, grounded answer contract, and citation
+  enforcement using core citations.
 - Observability: trace metadata builder and LangSmith skeleton.
 - Eval: local regression datasets, evaluator contracts, and runner.
 - Tool contracts: `ToolSpec` capability metadata and in-memory `ToolRegistry`.
@@ -154,10 +161,21 @@ PR-014 includes only deterministic local rules and simple PII redaction
 patterns. It does not use an external moderation provider, an LLM judge, RAG,
 memory, persistence, or production integrations.
 
+## RAG And Citations
+
+PR-015 adds RAG contracts and citation enforcement only. `Retriever` is an
+interface, and `InMemoryRetriever` is local/test-only. There is no vector
+database, Neo4j, SQL retrieval, document ingestion, GraphRAG, reranking, query
+rewriting, route-handler RAG logic, or production retrieval integration.
+
+`CitationEnforcer` creates citations only from retrieved chunks. If a policy
+requires citations and retrieval returns no chunks, the grounded answer is
+marked ungrounded with missing citations instead of fabricating sources.
+
 ## Current Non-Goals
 
 - No real LLM calls yet.
-- No RAG yet.
+- No production RAG infrastructure yet.
 - No real tool execution yet.
 - No production Zalo, TMS, CRM, Billing, or support integrations yet.
 - No database persistence yet.
@@ -180,6 +198,7 @@ memory, persistence, or production integrations.
 - PR-012: tool execution interface
 - PR-013: tool call audit record + fake customer-service tool executor
 - PR-014: safety pipeline skeleton
+- PR-015: RAG contracts + citation enforcement
 
 ## Deeper Docs
 
@@ -193,4 +212,6 @@ memory, persistence, or production integrations.
 - [Tool execution interface](../tool-execution.md)
 - [Tool call audit](../tool-audit.md)
 - [Safety pipeline](../safety-pipeline.md)
+- [RAG contracts](../rag.md)
+- [Citation enforcement](../citations.md)
 - [Agent development guide](../agent-development-guide.md)

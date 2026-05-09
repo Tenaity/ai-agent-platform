@@ -12,6 +12,8 @@ Future agent packages should include:
 - Prompt assets that are versioned with behavior changes.
 - Fake-tool integration tests before real tool integrations.
 - Regression evals for known user journeys and safety-sensitive cases.
+- RAG fixtures or tests only after retrieval contracts exist; production
+  retrieval adapters must stay out of app route handlers.
 
 Agents must not hide production behavior only in prompts. Workflow state,
 external inputs, and tool results should cross package boundaries through typed
@@ -94,6 +96,32 @@ belongs in `packages/snp_agent_safety`, not in app route handlers or
 domain-specific graph nodes. Future PRs can add prompt-injection detection,
 jailbreak detection, document safety, richer PII policy, and provider-backed
 moderation through the `SafetyChecker` interface.
+
+## RAG And Citations
+
+PR-015 adds RAG contracts but no production retrieval infrastructure.
+Agent-specific examples may provide fake `RetrievedChunk` fixtures, such as
+`agents/customer_service/rag_fixtures.py`, but they must not read external
+documents or call vector databases, SQL databases, graph databases, web search,
+or production systems.
+
+Reusable retrieval boundaries live in `packages/snp_agent_rag`:
+
+- `RetrievalRequest`
+- `RetrievedChunk`
+- `RetrievalResult`
+- `GroundedAnswer`
+- `Retriever`
+- `CitationEnforcer`
+
+`InMemoryRetriever` is local/test-only. It is useful for deterministic tests and
+examples before real adapters exist.
+
+Citation enforcement prevents source fabrication. When policy requires
+citations, answers should be marked ungrounded if retrieval returns no chunks or
+too few chunks. Future Qdrant, pgvector, Neo4j, GraphRAG, reranking, and query
+rewriting work should return `RetrievalResult` and reuse the same citation
+enforcement contract.
 
 ## Runtime Contract Examples
 
