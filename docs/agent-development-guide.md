@@ -4,6 +4,25 @@ Each agent lives under `agents/<agent_id>/` and must include an `agent.yaml`
 manifest. The manifest is the public contract between domain-specific behavior
 and the reusable platform runtime.
 
+## Creating An Agent
+
+Use the local generator CLI to create a scaffold from one of the repository
+templates:
+
+```bash
+PYTHONPATH=apps/agent-cli/src uv run python -m agent_cli.main create-agent \
+  --template agent-basic \
+  --name my_agent \
+  --domain my_domain \
+  --output-dir agents
+```
+
+Use `--dry-run` to inspect planned files without writing them. The CLI only
+copies and renders templates; it does not register, deploy, evaluate, or run the
+agent automatically. Generated projects still need review, domain-specific
+tests, regression datasets, and the standard acceptance checks before runtime
+use.
+
 Future agent packages should include:
 
 - A typed manifest with owner, version, runtime, model policy, tools, safety,

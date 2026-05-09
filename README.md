@@ -20,7 +20,7 @@ without becoming framework packages.
 
 ## Current Capabilities
 
-After PR-016, the platform includes:
+After PR-017, the platform includes:
 
 - A monorepo scaffold for apps, reusable packages, domain agents, prompts,
   datasets, docs, and future infrastructure.
@@ -47,6 +47,8 @@ After PR-016, the platform includes:
 - Reusable agent project templates for basic, RAG, tool, and full demo shapes.
 - A current chatbot demo example structure for future n8n/Zalo, Qdrant, and
   production-like mocked API wiring.
+- A local agent generator CLI skeleton that renders new projects from templates
+  without registering, deploying, or calling external services.
 
 ## Architecture
 
@@ -158,15 +160,35 @@ Identifier roles:
 
 ## Creating A New Agent From A Template
 
-Until the generator CLI exists, create a new agent manually:
+Use the local generator CLI:
 
-1. Copy one template directory into `agents/<agent_id>/`.
-2. Replace placeholders such as `{{agent_id}}`, `{{agent_module}}`, `{{owner}}`,
-   and `{{domain}}`.
-3. Rename `*.template` files to their runtime names, such as `agent.yaml` and
-   `graph.py`.
-4. Add regression datasets and tests.
-5. Run `make lint`, `make typecheck`, `make test`, and `make eval`.
+```bash
+PYTHONPATH=apps/agent-cli/src uv run python -m agent_cli.main create-agent \
+  --template agent-basic \
+  --name my_agent \
+  --domain my_domain \
+  --output-dir agents
+```
+
+Preview without writing files:
+
+```bash
+PYTHONPATH=apps/agent-cli/src uv run python -m agent_cli.main create-agent \
+  --template agent-rag \
+  --name zalo_agent \
+  --domain customer_service \
+  --output-dir agents \
+  --dry-run
+```
+
+The CLI performs deterministic placeholder replacement, refuses to overwrite an
+existing target directory, and does not register or deploy agents
+automatically. After generation:
+
+1. Review the generated files.
+2. Add regression datasets and tests.
+3. Register or route the agent through the normal runtime path when ready.
+4. Run `make lint`, `make typecheck`, `make test`, and `make eval`.
 
 Template types:
 
@@ -247,10 +269,10 @@ Completed:
 - PR-014: safety pipeline skeleton
 - PR-015: RAG contracts + citation enforcement
 - PR-016: project templates + example structure
+- PR-017: agent project generator CLI skeleton
 
 Next:
 
-- PR-017 Agent Project Generator CLI Skeleton
 - PR-018 Current Chatbot Demo Reference Project Wiring
 - PR-019 Qdrant Retriever Adapter
 - PR-020 Production-like Mock API Adapter
@@ -272,6 +294,7 @@ Next:
 - [RAG contracts](docs/rag.md)
 - [Citation enforcement](docs/citations.md)
 - [Scaffold templates](docs/scaffold-template.md)
+- [Agent generator CLI](docs/agent-generator-cli.md)
 - [Agent development guide](docs/agent-development-guide.md)
 
 ## Architectural Guardrails
@@ -284,5 +307,6 @@ Next:
 - RAG answers must be grounded when citation policy requires citations.
 - Templates are scaffolds, not runtime code.
 - Examples are references, not framework packages.
+- Generator CLI behavior is local developer tooling, not runtime behavior.
 - API route handlers must not call LLMs directly.
 - Secrets belong in environment variables, never source control.
