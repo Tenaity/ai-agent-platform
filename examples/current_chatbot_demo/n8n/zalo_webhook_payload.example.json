@@ -1,16 +1,17 @@
 {
+  "_comment": "Raw Zalo OA webhook event received by n8n. This is the payload shape sent by the Zalo platform to the registered webhook URL. n8n normalizes this into a platform RuntimeRequest before calling the Runtime API.",
   "event_name": "user_send_text",
-  "app_id": "zalo-app-demo",
+  "app_id": "zalo-oa-demo-app",
   "sender": {
-    "id": "zalo_user_123"
+    "id": "zalo_user_123456789"
   },
   "recipient": {
-    "id": "zalo_oa_demo"
+    "id": "zalo_oa_snp_demo"
   },
   "message": {
-    "msg_id": "zalo-message-001",
-    "text": "Can you track container ABCU1234567?"
+    "msg_id": "zalo-msg-001-abcd1234",
+    "text": "Cho tôi hỏi container ABCU1234567 hiện đang ở đâu?"
   },
-  "timestamp": 1778263200000
+  "timestamp": 1778263200000,
+  "user_id_by_app": "zalo_user_123456789"
 }
-

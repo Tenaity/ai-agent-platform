@@ -3,10 +3,17 @@
   "data": {
     "booking_number": "BK-2026-0001",
     "status": "confirmed",
-    "vessel": "SNP Demo Vessel",
-    "cutoff": "2026-05-10T17:00:00Z"
+    "shipper": "Demo Shipper Co. Ltd",
+    "consignee": "Demo Consignee Co. Ltd",
+    "vessel": "SNP Demo Vessel 01",
+    "voyage": "VOY-2026-0512",
+    "port_of_loading": "Ho Chi Minh City (Cat Lai)",
+    "port_of_discharge": "Singapore (PSA)",
+    "cargo_cutoff": "2026-05-10T17:00:00+07:00",
+    "document_cutoff": "2026-05-10T12:00:00+07:00",
+    "containers_booked": 2,
+    "containers_confirmed": 2
   },
   "error": null,
-  "request_id": "mock-request-id"
+  "request_id": "req-booking-status-001"
 }
-

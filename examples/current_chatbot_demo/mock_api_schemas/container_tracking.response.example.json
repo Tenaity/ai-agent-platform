@@ -2,15 +2,24 @@
   "success": true,
   "data": {
     "container_number": "ABCU1234567",
+    "container_type": "20DC",
     "status": "in_transit",
+    "terminal": "Cat Lai Terminal",
     "last_event": {
-      "location": "Cat Lai Terminal",
-      "timestamp": "2026-05-09T00:00:00Z",
-      "description": "Container departed terminal"
+      "event_type": "gate_out",
+      "location": "Cat Lai Terminal — Gate 3",
+      "timestamp": "2026-05-09T08:30:00+07:00",
+      "description": "Container departed terminal via truck"
     },
-    "eta": "2026-05-12"
+    "next_event": {
+      "event_type": "vessel_loading",
+      "location": "Cat Lai Terminal — Berth 5",
+      "estimated_timestamp": "2026-05-11T06:00:00+07:00"
+    },
+    "eta": "2026-05-12",
+    "vessel": "SNP Demo Vessel 01",
+    "voyage": "VOY-2026-0512"
   },
   "error": null,
-  "request_id": "mock-request-id"
+  "request_id": "req-container-tracking-001"
 }
-

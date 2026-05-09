@@ -1,9 +1,34 @@
+# Qdrant Retriever Config — Example Shape
+#
+# This file documents the configuration fields required by a future Qdrant
+# retriever adapter implementing the platform Retriever interface.
+#
+# Do not include real Qdrant credentials here.
+# Set QDRANT_URL and QDRANT_API_KEY as environment variables.
+# Reference: .env.example
+
+# Qdrant cluster URL. Use an environment variable in production.
+# Example: https://your-cluster-id.us-east-1-0.aws.cloud.qdrant.io:6333
 url: "https://qdrant.example.invalid"
+
+# Qdrant collection name for the customer-service knowledge base.
 collection_name: "customer_service_knowledge"
+
+# Name of the named vector to query.
+# Use the named vector that was configured during collection creation.
 vector_name: "text_vector"
+
+# Payload field keys. These must match the fields indexed in the collection.
+# See payload_schema.example.json for the full payload shape.
 text_payload_key: "text"
 title_payload_key: "title"
 uri_payload_key: "uri"
 source_id_payload_key: "source_id"
+
+# Number of results to retrieve per query (top-k).
+# Override per-request via the Retriever.retrieve() call if needed.
 top_k_default: 5
 
+# Score threshold: only return chunks with similarity >= this value.
+# Set to null to disable score filtering.
+score_threshold: 0.70

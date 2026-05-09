@@ -1,15 +1,17 @@
 {
-  "text": "Customers can track containers by providing a valid container number.",
-  "title": "Container Tracking Instruction",
-  "uri": "kb://customer-service/container-tracking",
-  "source_id": "kb-container-tracking-v1",
+  "_comment": "Example document payload stored in the Qdrant customer_service_knowledge collection. All fields are indexed as payload. 'text' is the main chunk content used for retrieval and answer generation.",
+  "text": "Container pickup at Cat Lai Terminal is available Monday through Saturday, 07:00 to 17:00 local time. Pickup outside these hours requires advance coordination with the terminal operations team via the support hotline.",
+  "title": "Cat Lai Terminal — Container Pickup Operating Hours",
+  "uri": "kb://customer-service/cat-lai-operating-hours",
+  "source_id": "kb-cat-lai-hours-v2",
   "doc_type": "policy",
   "department": "customer_service",
-  "effective_date": "2026-05-09",
+  "effective_date": "2026-01-01",
+  "language": "en",
   "metadata": {
-    "language": "en",
-    "version": "1.0",
-    "owner": "platform-team"
+    "version": "2.0",
+    "owner": "platform-team",
+    "last_reviewed": "2026-05-09",
+    "tags": ["terminal", "operating-hours", "container-pickup"]
   }
 }
-
