@@ -25,7 +25,7 @@ Zalo (user sends message)
       → Intent routing node
       → RAG branch (future Qdrant retriever adapter)
           → RetrievalResult + CitationEnforcer
-      → Tool branch (future production-like mock API adapters)
+      → Tool branch (production-like mock API adapters)
           → ToolGateway policy check → executor → audit record
       → Answer formatting node
   → RuntimeResponse returned to n8n
@@ -79,7 +79,7 @@ Input
 → Safety precheck         (SafetyPipeline: rule-based + optional PII redaction)
 → Intent routing          (classify: rag / tool / direct_answer)
 → RAG branch              (future Qdrant retriever → RetrievalResult + citations)
-→ Tool branch             (future mock API adapters → ToolGateway → audit)
+→ Tool branch             (mock API adapters → ToolGateway → audit)
 → Answer formatting       (CitationEnforcer when citations required)
 → RuntimeResponse
 ```
@@ -104,7 +104,7 @@ active.
 
 ---
 
-## Mock API Schemas (Future)
+## Mock API Schemas And Adapter
 
 `mock_api_schemas/` contains production-like request/response envelopes for:
 
@@ -123,8 +123,12 @@ All responses follow the platform envelope:
 }
 ```
 
-Future mock API adapters must implement the platform `ToolExecutor` interface,
-flow through `ToolGateway` policy, and produce `ToolCallRecord` audit entries.
+PR-020 adds a deterministic local adapter in
+`agents/customer_service/mock_api/`. It implements the platform `ToolExecutor`
+interface for the customer-service tools without making external HTTP calls.
+
+Future graph wiring must compose this executor behind `ToolGateway` policy and
+tool call audit before any production-like workflow uses it.
 
 ---
 

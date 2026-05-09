@@ -1,7 +1,7 @@
 {
   "success": true,
   "data": {
-    "ticket_id": "SUP-2026-0001",
+    "ticket_id": "TICKET-customer_123-001",
     "status": "created",
     "priority": "normal",
     "subject": "Container tracking update missing",

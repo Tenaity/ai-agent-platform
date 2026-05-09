@@ -4,6 +4,11 @@ PR-012 introduces domain-neutral tool execution contracts and an executor
 interface. PR-013 adds `AuditAwareToolExecutor` to wrap any executor and
 produce one `ToolCallAuditRecord` per execution.
 
+PR-020 adds the first production-like local adapter for the customer-service
+demo: `CustomerServiceMockApiToolExecutor`. It implements `ToolExecutor` using
+deterministic in-memory fixtures and typed Pydantic request/response envelopes.
+It does not call real company systems or make HTTP requests.
+
 ## Responsibility Split
 
 - `ToolGateway` decides whether an agent may use a tool.
@@ -71,6 +76,9 @@ PR-012 and PR-013 do not add:
 
 Real adapters will come later behind the `ToolExecutor` interface after fake
 tool tests and policy enforcement are stable.
+
+See [mock-api-adapters.md](mock-api-adapters.md) for the local customer-service
+mock adapter used by the current chatbot demo.
 
 See [tool-audit.md](tool-audit.md) for audit record contracts and the
 `AuditAwareToolExecutor` composition pattern.

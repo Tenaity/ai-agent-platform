@@ -5,7 +5,8 @@
 This document describes the architecture boundaries for the current chatbot demo
 reference project. Files in this directory are schema examples and placeholder
 code only. No real Qdrant, production APIs, LLM calls, or n8n routing are
-implemented here.
+implemented here. PR-020 adds a local production-like mock API adapter under
+`agents/customer_service/mock_api`; it is not wired into this example graph yet.
 
 ---
 
@@ -35,7 +36,7 @@ flowchart TD
     RetrievalResult --> CitationEnforcer["CitationEnforcer\n(grounding enforcement)"]
 
     ToolBranch --> ToolGateway["ToolGateway\n(policy check)"]
-    ToolGateway --> ToolExecutor["Future: production-like\nmock API adapters\n(implements ToolExecutor)"]
+    ToolGateway --> ToolExecutor["Production-like\nmock API adapters\n(implements ToolExecutor)"]
     ToolExecutor --> ToolAudit["ToolCallRecord\n(audit sink)"]
 
     CitationEnforcer --> Formatter["answer_formatting node"]
@@ -94,8 +95,10 @@ Production-like internal API calls must:
 - Pass through `ToolGateway` for policy decisions before execution
 - Be executed by adapters implementing `ToolExecutor`
 - Produce `ToolCallRecord` audit entries regardless of outcome
+- Use the PR-020 mock adapter for local tests before real integrations exist
 
 Schema shape: `mock_api_schemas/`
+Local adapter: `../../agents/customer_service/mock_api/`
 
 ### n8n/Zalo Boundary
 
