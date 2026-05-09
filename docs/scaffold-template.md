@@ -54,6 +54,9 @@ domain-neutral where possible.
 Examples are reference implementations or project notes. They can describe a
 concrete scenario, such as `examples/current_chatbot_demo`, but they must not be
 imported by framework packages and must not become production integration code.
+The current chatbot demo example shows how a real project can apply the
+template conventions without adding Qdrant, mock API, or n8n/Zalo runtime
+integrations yet.
 
 ## Maintenance Rules
 

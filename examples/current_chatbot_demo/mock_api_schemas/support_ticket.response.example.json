@@ -1,6 +1,12 @@
 {
-  "ticket_id": "SUP-2026-0001",
-  "status": "created",
-  "priority": "normal",
-  "created_at": "2026-05-09T00:00:00Z"
+  "success": true,
+  "data": {
+    "ticket_id": "SUP-2026-0001",
+    "status": "created",
+    "priority": "normal",
+    "created_at": "2026-05-09T00:00:00Z"
+  },
+  "error": null,
+  "request_id": "mock-request-id"
 }
+

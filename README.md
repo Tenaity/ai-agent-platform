@@ -20,7 +20,7 @@ without becoming framework packages.
 
 ## Current Capabilities
 
-After PR-017, the platform includes:
+After PR-018, the platform includes:
 
 - A monorepo scaffold for apps, reusable packages, domain agents, prompts,
   datasets, docs, and future infrastructure.
@@ -49,6 +49,8 @@ After PR-017, the platform includes:
   production-like mocked API wiring.
 - A local agent generator CLI skeleton that renders new projects from templates
   without registering, deploying, or calling external services.
+- A current chatbot demo reference project structure with agent, Qdrant,
+  production-like mock API, and n8n/Zalo payload examples.
 
 ## Architecture
 
@@ -198,9 +200,9 @@ Template types:
 - `agent-full-demo`: safety + RAG + tools + eval placeholders.
 
 The current chatbot reference project lives in
-`examples/current_chatbot_demo`. It documents future Runtime API,
-customer-service agent, Qdrant retrieval, mocked API, and n8n/Zalo webhook
-wiring without implementing production integrations.
+`examples/current_chatbot_demo`. It documents the reference agent shape,
+future Runtime API invocation, Qdrant retrieval, production-like mocked APIs,
+and n8n/Zalo webhook wiring without implementing production integrations.
 
 ## Local Commands
 
@@ -270,10 +272,10 @@ Completed:
 - PR-015: RAG contracts + citation enforcement
 - PR-016: project templates + example structure
 - PR-017: agent project generator CLI skeleton
+- PR-018: current chatbot demo reference project wiring
 
 Next:
 
-- PR-018 Current Chatbot Demo Reference Project Wiring
 - PR-019 Qdrant Retriever Adapter
 - PR-020 Production-like Mock API Adapter
 - PR-021 n8n/Zalo Facade Endpoint

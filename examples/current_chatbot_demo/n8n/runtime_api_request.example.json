@@ -1,0 +1,13 @@
+{
+  "tenant_id": "tenant_demo",
+  "channel": "zalo",
+  "user_id": "zalo_user_123",
+  "thread_id": "zalo:zalo_user_123",
+  "message": "Can you track container ABCU1234567?",
+  "metadata": {
+    "source": "n8n",
+    "workflow": "current_chatbot_demo",
+    "zalo_message_id": "zalo-message-001"
+  }
+}
+

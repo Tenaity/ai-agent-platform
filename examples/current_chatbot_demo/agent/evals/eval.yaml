@@ -1,0 +1,10 @@
+agent: snp.customer_service.current_chatbot_demo
+dataset: examples/current_chatbot_demo/agent/evals/current_chatbot_demo_regression_v1.jsonl
+cases:
+  - id: container_tracking_reference
+    input: Track container ABCU1234567
+    expected_path: tool_branch_future_mock_api
+  - id: opening_hours_reference
+    input: What are the support opening hours?
+    expected_path: rag_branch_future_qdrant
+
