@@ -20,7 +20,7 @@ without becoming framework packages.
 
 ## Current Capabilities
 
-After PR-018, the platform includes:
+After PR-020, the platform includes:
 
 - A monorepo scaffold for apps, reusable packages, domain agents, prompts,
   datasets, docs, and future infrastructure.
@@ -51,6 +51,10 @@ After PR-018, the platform includes:
   without registering, deploying, or calling external services.
 - A current chatbot demo reference project structure with agent, Qdrant,
   production-like mock API, and n8n/Zalo payload examples.
+- A Qdrant retriever adapter that implements the domain-neutral `Retriever`
+  contract without wiring retrieval into runtime routes.
+- A deterministic customer-service mock API client and `ToolExecutor` adapter
+  for production-like local tool workflow tests without calling company systems.
 
 ## Architecture
 
@@ -101,8 +105,8 @@ flowchart TD
 Current non-goals:
 
 - No real LLM calls yet.
-- No production RAG infrastructure yet.
-- No real tool execution adapters yet.
+- No production RAG graph wiring yet.
+- No real production tool integrations yet.
 - No production Zalo, TMS, CRM, Billing, or support integrations yet.
 - No database persistence yet.
 - No external moderation provider or LLM judge yet.
@@ -273,11 +277,11 @@ Completed:
 - PR-016: project templates + example structure
 - PR-017: agent project generator CLI skeleton
 - PR-018: current chatbot demo reference project wiring
+- PR-019: Qdrant Retriever Adapter
+- PR-020: Production-like Mock API Adapter
 
 Next:
 
-- PR-019 Qdrant Retriever Adapter
-- PR-020 Production-like Mock API Adapter
 - PR-021 n8n/Zalo Facade Endpoint
 
 ## Deeper Docs
@@ -292,6 +296,7 @@ Next:
 - [Tool Gateway policy](docs/tool-gateway.md)
 - [Tool execution interface](docs/tool-execution.md)
 - [Tool call audit](docs/tool-audit.md)
+- [Mock API adapters](docs/mock-api-adapters.md)
 - [Safety pipeline](docs/safety-pipeline.md)
 - [RAG contracts](docs/rag.md)
 - [Citation enforcement](docs/citations.md)

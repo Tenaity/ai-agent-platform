@@ -4,8 +4,9 @@ The SNP AI Agent Platform is layered runtime infrastructure for building
 domain-specific agents. It provides reusable contracts, graph execution
 plumbing, observability metadata, eval scaffolding, checkpoint configuration,
 tool governance policy, a deterministic safety pipeline skeleton, and
-domain-neutral RAG contracts with citation enforcement. It is not a one-off
-chatbot.
+domain-neutral RAG contracts with citation enforcement. The customer-service
+demo also has local production-like mock API adapters for tool testing. It is
+not a one-off chatbot.
 
 It also includes reusable project templates and examples so new agent projects
 can start from framework-aligned scaffolds instead of copying an existing
@@ -99,6 +100,9 @@ domain-neutral and must not import templates or examples.
 - Tool audit: `ToolCallAuditRecord`, `AuditAwareToolExecutor`, and
   `InMemoryToolCallAuditSink`. Produces security/ops audit records separate
   from LangSmith traces.
+- Customer-service mock API adapter: production-like local request/response
+  schemas, deterministic fixture-backed client, and `ToolExecutor` adapter for
+  testing current chatbot demo tool workflows without real company systems.
 - Templates: reusable project scaffolds for basic, RAG, tool, and full demo
   agents.
 - Examples: reference implementation structures such as
@@ -179,9 +183,11 @@ flowchart TD
     Approval -- No --> Allowed["Allowed"]
 ```
 
-`ToolGateway` currently returns policy decisions only. It does not execute tools
-or call third-party systems. `PolicyAwareToolExecutor` composes gateway policy
-with a wrapped executor interface, but PR-012 still adds no real adapters.
+`ToolGateway` returns policy decisions only. It does not execute tools or call
+third-party systems. `PolicyAwareToolExecutor` composes gateway policy with a
+wrapped executor interface. PR-020 adds a customer-service mock executor for
+local tests only; it is not a production integration and is not wired into route
+handlers.
 
 ## Safety Boundary
 
@@ -213,7 +219,7 @@ marked ungrounded with missing citations instead of fabricating sources.
 
 - No real LLM calls yet.
 - No production RAG wiring to a graph yet (QdrantRetriever exists but is not wired).
-- No real tool execution yet.
+- No real production tool integrations yet.
 - No production Zalo, TMS, CRM, Billing, or support integrations yet.
 - No database persistence yet.
 - No Memory Manager yet.
@@ -241,6 +247,7 @@ marked ungrounded with missing citations instead of fabricating sources.
 - PR-017: agent generator CLI
 - PR-018: current chatbot demo reference project wiring
 - PR-019: Qdrant retriever adapter
+- PR-020: production-like mock API adapter
 
 ## Deeper Docs
 
@@ -253,6 +260,7 @@ marked ungrounded with missing citations instead of fabricating sources.
 - [Tool Gateway policy](../tool-gateway.md)
 - [Tool execution interface](../tool-execution.md)
 - [Tool call audit](../tool-audit.md)
+- [Mock API adapters](../mock-api-adapters.md)
 - [Safety pipeline](../safety-pipeline.md)
 - [RAG contracts](../rag.md)
 - [Qdrant retriever adapter](../qdrant-retriever.md)
