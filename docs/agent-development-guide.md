@@ -70,6 +70,31 @@ tool contracts and policy skeleton.
 See [tool-execution.md](tool-execution.md) for the executor interface that later
 fake and real adapters will implement.
 
+## Safety Pipeline
+
+Safety is a runtime boundary, not just prompt text. The platform-level safety
+pipeline receives a typed `SafetyCheckRequest` and returns a typed
+`SafetyCheckResult` before content proceeds across a boundary.
+
+PR-014 adds deterministic local safety primitives only:
+
+- blocked term checks
+- human review term checks
+- optional simple email-like and phone-like redaction
+- ordered checker pipeline behavior
+
+No external moderation provider, real LLM call, RAG system, memory manager, or
+production integration is used. Tool policy remains separate: the Tool Gateway
+governs whether a tool may be accessed, while the safety pipeline governs
+whether content may proceed, should be blocked, should be reviewed, or should be
+redacted.
+
+Agents may declare safety intent in `agent.yaml`, but reusable safety logic
+belongs in `packages/snp_agent_safety`, not in app route handlers or
+domain-specific graph nodes. Future PRs can add prompt-injection detection,
+jailbreak detection, document safety, richer PII policy, and provider-backed
+moderation through the `SafetyChecker` interface.
+
 ## Runtime Contract Examples
 
 Runtime adapters receive a `RuntimeRequest` after the platform has selected an
