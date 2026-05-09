@@ -9,7 +9,7 @@ demo, or a place for product-specific business logic to live in runtime apps.
 
 ## Current Capabilities
 
-After PR-014, the platform includes:
+After PR-015, the platform includes:
 
 - A monorepo scaffold for apps, reusable packages, domain agents, prompts,
   datasets, docs, and future infrastructure.
@@ -30,6 +30,9 @@ After PR-014, the platform includes:
 - A domain-neutral deterministic safety pipeline skeleton with typed contracts,
   local rule-based checks, optional simple PII redaction, and a permissive
   runtime input precheck.
+- Domain-neutral RAG contracts, a retriever interface, local/test-only
+  `InMemoryRetriever`, and citation enforcement that reuses core citations and
+  does not fabricate sources.
 
 ## Architecture
 
@@ -54,6 +57,8 @@ flowchart TD
     Safety --> SafetyChecker["RuleBasedSafetyChecker"]
 
     Runtime --> AgentGraph["Agent Workflow Graph"]
+    AgentGraph --> Retriever["Retriever Interface"]
+    Retriever --> CitationEnforcer["CitationEnforcer"]
 
     AgentGraph --> ToolGateway["ToolGateway Policy Layer"]
     ToolGateway --> ToolRegistry["ToolRegistry"]
@@ -69,11 +74,13 @@ flowchart TD
 Current non-goals:
 
 - No real LLM calls yet.
-- No RAG yet.
+- No production RAG infrastructure yet.
 - No real tool execution adapters yet.
 - No production Zalo, TMS, CRM, Billing, or support integrations yet.
 - No database persistence yet.
 - No external moderation provider or LLM judge yet.
+- No vector DB, Neo4j, SQL retrieval, document ingestion, reranking, or
+  GraphRAG yet.
 
 ## Runtime Request Flow
 
@@ -188,11 +195,13 @@ Completed:
 - PR-012: tool execution interface
 - PR-013: tool call audit record + fake customer-service tool executor
 - PR-014: safety pipeline skeleton
+- PR-015: RAG contracts + citation enforcement
 
 Next:
 
-- PR-015+: RAG contracts, memory manager, approval workflows, durable
-  persistence, provider-backed safety, and production integration adapters
+- PR-016+: memory manager, approval workflows, durable persistence,
+  provider-backed safety, production retrieval adapters, and production
+  integration adapters
 
 ## Deeper Docs
 
@@ -207,6 +216,8 @@ Next:
 - [Tool execution interface](docs/tool-execution.md)
 - [Tool call audit](docs/tool-audit.md)
 - [Safety pipeline](docs/safety-pipeline.md)
+- [RAG contracts](docs/rag.md)
+- [Citation enforcement](docs/citations.md)
 - [Agent development guide](docs/agent-development-guide.md)
 
 ## Architectural Guardrails
@@ -216,5 +227,6 @@ Next:
 - Agent behavior must be versioned, testable, and evaluable.
 - Tool use must flow through Tool Gateway policy before execution exists.
 - Safety checks must be explicit runtime boundaries, not prompt-only behavior.
+- RAG answers must be grounded when citation policy requires citations.
 - API route handlers must not call LLMs directly.
 - Secrets belong in environment variables, never source control.
