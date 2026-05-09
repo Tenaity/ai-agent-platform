@@ -1,10 +1,16 @@
 {
-  "container_number": "ABCU1234567",
-  "status": "in_transit",
-  "last_event": {
-    "location": "Cat Lai Terminal",
-    "timestamp": "2026-05-09T00:00:00Z",
-    "description": "Container departed terminal"
+  "success": true,
+  "data": {
+    "container_number": "ABCU1234567",
+    "status": "in_transit",
+    "last_event": {
+      "location": "Cat Lai Terminal",
+      "timestamp": "2026-05-09T00:00:00Z",
+      "description": "Container departed terminal"
+    },
+    "eta": "2026-05-12"
   },
-  "eta": "2026-05-12"
+  "error": null,
+  "request_id": "mock-request-id"
 }
+

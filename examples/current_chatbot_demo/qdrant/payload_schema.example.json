@@ -1,0 +1,15 @@
+{
+  "text": "Customers can track containers by providing a valid container number.",
+  "title": "Container Tracking Instruction",
+  "uri": "kb://customer-service/container-tracking",
+  "source_id": "kb-container-tracking-v1",
+  "doc_type": "policy",
+  "department": "customer_service",
+  "effective_date": "2026-05-09",
+  "metadata": {
+    "language": "en",
+    "version": "1.0",
+    "owner": "platform-team"
+  }
+}
+

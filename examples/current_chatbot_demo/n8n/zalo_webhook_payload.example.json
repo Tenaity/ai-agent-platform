@@ -1,0 +1,16 @@
+{
+  "event_name": "user_send_text",
+  "app_id": "zalo-app-demo",
+  "sender": {
+    "id": "zalo_user_123"
+  },
+  "recipient": {
+    "id": "zalo_oa_demo"
+  },
+  "message": {
+    "msg_id": "zalo-message-001",
+    "text": "Can you track container ABCU1234567?"
+  },
+  "timestamp": 1778263200000
+}
+

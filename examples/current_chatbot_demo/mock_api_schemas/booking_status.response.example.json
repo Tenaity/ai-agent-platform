@@ -1,6 +1,12 @@
 {
-  "booking_number": "BK-2026-0001",
-  "status": "confirmed",
-  "vessel": "SNP Demo Vessel",
-  "cutoff": "2026-05-10T17:00:00Z"
+  "success": true,
+  "data": {
+    "booking_number": "BK-2026-0001",
+    "status": "confirmed",
+    "vessel": "SNP Demo Vessel",
+    "cutoff": "2026-05-10T17:00:00Z"
+  },
+  "error": null,
+  "request_id": "mock-request-id"
 }
+

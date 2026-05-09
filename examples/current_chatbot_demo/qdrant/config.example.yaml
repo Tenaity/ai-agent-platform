@@ -1,0 +1,9 @@
+url: "https://qdrant.example.invalid"
+collection_name: "customer_service_knowledge"
+vector_name: "text_vector"
+text_payload_key: "text"
+title_payload_key: "title"
+uri_payload_key: "uri"
+source_id_payload_key: "source_id"
+top_k_default: 5
+

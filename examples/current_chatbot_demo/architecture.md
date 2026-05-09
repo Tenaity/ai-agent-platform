@@ -2,40 +2,59 @@
 
 ```mermaid
 flowchart TD
-    Zalo["Zalo Webhook"] --> N8N["n8n Workflow"]
-    N8N --> RuntimeAPI["Runtime API"]
-    RuntimeAPI --> Agent["Customer Service Agent"]
+    Zalo["Zalo webhook event"] --> N8N["n8n workflow"]
+    N8N --> RuntimeRequest["Normalized RuntimeRequest"]
+    RuntimeRequest --> RuntimeAPI["Runtime API"]
+    RuntimeAPI --> Agent["Reference customer-service agent graph"]
 
-    Agent --> Safety["Safety Pipeline"]
-    Agent --> RAG["RAG Contracts"]
-    RAG --> Qdrant["Future Qdrant Adapter"]
-    Agent --> Tools["Tool Gateway + Audited Executor"]
+    Agent --> Safety["Safety precheck"]
+    Safety --> Intent["Intent routing"]
+    Intent --> RAGBranch["RAG branch"]
+    Intent --> ToolBranch["Tool branch"]
+    Intent --> DirectAnswer["Direct answer branch"]
 
-    Tools --> Tracking["Mock Container Tracking API"]
-    Tools --> Booking["Mock Booking Status API"]
-    Tools --> Ticket["Mock Support Ticket API"]
+    RAGBranch --> QdrantRetriever["Future Qdrant Retriever adapter"]
+    QdrantRetriever --> RetrievalResult["RetrievalResult + citations"]
 
-    Agent --> RuntimeAPI
-    RuntimeAPI --> N8N
+    ToolBranch --> ToolGateway["ToolGateway policy"]
+    ToolGateway --> MockAdapters["Future production-like mock API adapters"]
+    MockAdapters --> ToolAudit["Tool call audit"]
+
+    RetrievalResult --> Formatter["Answer formatting"]
+    ToolAudit --> Formatter
+    DirectAnswer --> Formatter
+    Formatter --> RuntimeResponse["RuntimeResponse"]
+    RuntimeResponse --> N8N
     N8N --> Zalo
 ```
 
-The boxes labeled future or mock describe intended integration points. This
-example does not implement those services.
+## Reference Graph Shape
 
-## Runtime Boundary
+The example agent documents this future graph shape:
 
-The Runtime API remains the only HTTP runtime entrypoint. Route handlers stay
-thin and do not own retrieval, tool, or safety business logic.
+```text
+Input
+-> Safety precheck
+-> Intent routing
+-> RAG branch using Qdrant retriever
+-> Tool branch using production-like mock API adapters
+-> Answer formatting
+-> RuntimeResponse
+```
 
-## Retrieval Boundary
+The files under `agent/` are scaffold examples. They do not implement real
+retrieval, real tools, real LLM calls, or runtime registration.
 
-Future Qdrant retrieval should implement the `Retriever` interface and return
-`RetrievalResult`. Answers should pass through `CitationEnforcer` when policy
-requires citations.
+## Boundaries
 
-## Tool Boundary
+The Runtime API remains the HTTP runtime boundary. Route handlers should stay
+thin and delegate reusable platform behavior to packages.
 
-Production-like API calls should be modeled with `ToolSpec`, checked by
-`ToolGateway`, executed through `PolicyAwareToolExecutor`, and audited through
-`AuditAwareToolExecutor`.
+Future Qdrant retrieval should implement `Retriever` and return
+`RetrievalResult`. Answers that rely on retrieval should pass through
+`CitationEnforcer` when citation policy requires grounding.
+
+Production-like internal API calls should be modeled with `ToolSpec`, checked
+by `ToolGateway`, executed through the tool execution interface, and recorded
+with tool call audit metadata.
+
