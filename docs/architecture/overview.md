@@ -198,6 +198,13 @@ interface, and `InMemoryRetriever` is local/test-only. There is no vector
 database, Neo4j, SQL retrieval, document ingestion, GraphRAG, reranking, query
 rewriting, route-handler RAG logic, or production retrieval integration.
 
+PR-019 adds `QdrantRetriever`, the first production-shaped adapter implementing
+the `Retriever` contract. It queries an existing Qdrant collection via
+`qdrant-client`, maps payload fields to `RetrievedChunk` contracts, clamps
+scores to `[0, 1]`, and translates scalar `request.filters` to Qdrant
+`FieldCondition` clauses. The client is injected at construction so tests use
+a mock without a real Qdrant server.
+
 `CitationEnforcer` creates citations only from retrieved chunks. If a policy
 requires citations and retrieval returns no chunks, the grounded answer is
 marked ungrounded with missing citations instead of fabricating sources.
@@ -205,7 +212,7 @@ marked ungrounded with missing citations instead of fabricating sources.
 ## Current Non-Goals
 
 - No real LLM calls yet.
-- No production RAG infrastructure yet.
+- No production RAG wiring to a graph yet (QdrantRetriever exists but is not wired).
 - No real tool execution yet.
 - No production Zalo, TMS, CRM, Billing, or support integrations yet.
 - No database persistence yet.
@@ -231,6 +238,9 @@ marked ungrounded with missing citations instead of fabricating sources.
 - PR-014: safety pipeline skeleton
 - PR-015: RAG contracts + citation enforcement
 - PR-016: project templates + example structure
+- PR-017: agent generator CLI
+- PR-018: current chatbot demo reference project wiring
+- PR-019: Qdrant retriever adapter
 
 ## Deeper Docs
 
@@ -245,6 +255,7 @@ marked ungrounded with missing citations instead of fabricating sources.
 - [Tool call audit](../tool-audit.md)
 - [Safety pipeline](../safety-pipeline.md)
 - [RAG contracts](../rag.md)
+- [Qdrant retriever adapter](../qdrant-retriever.md)
 - [Citation enforcement](../citations.md)
 - [Scaffold templates](../scaffold-template.md)
 - [Agent development guide](../agent-development-guide.md)
