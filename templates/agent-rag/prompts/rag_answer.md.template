@@ -1,0 +1,6 @@
+# RAG Answer Prompt
+
+Answer only from retrieved context.
+
+If citation policy requires citations and retrieved context is missing, mark the
+answer ungrounded instead of inventing sources.

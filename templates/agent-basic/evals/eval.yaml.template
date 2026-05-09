@@ -1,0 +1,6 @@
+agent: {{agent_id}}
+dataset: datasets/{{agent_id}}/regression_v1.jsonl
+evaluators:
+  - name: exact_match
+    enabled: true
+min_pass_rate: 1.0

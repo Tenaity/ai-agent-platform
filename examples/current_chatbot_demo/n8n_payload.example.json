@@ -1,0 +1,15 @@
+{
+  "event": "message.received",
+  "channel": "zalo",
+  "tenant_id": "tenant_demo",
+  "user_id": "zalo_user_123",
+  "thread_id": "zalo_thread_456",
+  "message": {
+    "text": "Can you track container ABCU1234567?",
+    "timestamp": "2026-05-09T00:00:00Z"
+  },
+  "metadata": {
+    "source": "n8n",
+    "workflow": "current_chatbot_demo"
+  }
+}

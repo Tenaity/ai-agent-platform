@@ -1,0 +1,10 @@
+{
+  "container_number": "ABCU1234567",
+  "status": "in_transit",
+  "last_event": {
+    "location": "Cat Lai Terminal",
+    "timestamp": "2026-05-09T00:00:00Z",
+    "description": "Container departed terminal"
+  },
+  "eta": "2026-05-12"
+}

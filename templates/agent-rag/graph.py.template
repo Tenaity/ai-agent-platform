@@ -1,0 +1,31 @@
+"""RAG-aware graph skeleton for {{agent_id}}."""
+
+from snp_agent_core.contracts import RuntimeRequest, RuntimeResponse
+from snp_agent_core.contracts.status import AgentRunStatus
+
+from agents.{{agent_module}}.rag import answer_with_retrieval
+
+
+class {{graph_runner_class}}:
+    """Runtime-compatible graph runner with citation enforcement."""
+
+    def invoke(self, request: RuntimeRequest, **_kwargs: object) -> RuntimeResponse:
+        """Return a grounded answer from retrieval contracts only."""
+
+        grounded = answer_with_retrieval(request)
+        return RuntimeResponse(
+            thread_id=request.thread_id,
+            status=AgentRunStatus.COMPLETED if grounded.grounded else AgentRunStatus.FAILED,
+            answer=grounded.answer,
+            citations=grounded.citations,
+            tool_calls=[],
+            trace_id=None,
+            handoff_required=False,
+            metadata=grounded.metadata,
+        )
+
+
+def build_graph(**_kwargs: object) -> {{graph_runner_class}}:
+    """Build the graph runner used by the runtime adapter."""
+
+    return {{graph_runner_class}}()

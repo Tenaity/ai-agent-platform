@@ -1,0 +1,31 @@
+"""Tool-aware graph skeleton for {{agent_id}}."""
+
+from snp_agent_core.contracts import RuntimeRequest, RuntimeResponse
+from snp_agent_core.contracts.status import AgentRunStatus
+
+from agents.{{agent_module}}.tools import build_tool_registry
+
+
+class {{graph_runner_class}}:
+    """Runtime-compatible graph runner with tool registry structure."""
+
+    def invoke(self, request: RuntimeRequest, **_kwargs: object) -> RuntimeResponse:
+        """Return a deterministic response after constructing tool metadata."""
+
+        registry = build_tool_registry()
+        return RuntimeResponse(
+            thread_id=request.thread_id,
+            status=AgentRunStatus.COMPLETED,
+            answer=f"Registered {len(registry.list_tools())} tool specs.",
+            citations=[],
+            tool_calls=[],
+            trace_id=None,
+            handoff_required=False,
+            metadata={"agent_id": "{{agent_id}}"},
+        )
+
+
+def build_graph(**_kwargs: object) -> {{graph_runner_class}}:
+    """Build the graph runner used by the runtime adapter."""
+
+    return {{graph_runner_class}}()

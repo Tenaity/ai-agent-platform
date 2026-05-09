@@ -1,0 +1,8 @@
+agent: {{agent_id}}
+dataset: datasets/{{agent_id}}/tool_regression_v1.jsonl
+evaluators:
+  - name: tool_policy
+    enabled: true
+  - name: exact_match
+    enabled: true
+min_pass_rate: 1.0

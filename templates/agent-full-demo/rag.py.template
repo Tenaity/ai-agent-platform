@@ -1,0 +1,33 @@
+"""RAG fixture structure for {{agent_id}} full demo."""
+
+from snp_agent_core.contracts import RuntimeRequest
+from snp_agent_rag import (
+    CitationEnforcer,
+    CitationPolicy,
+    GroundedAnswer,
+    InMemoryRetriever,
+    RetrievalRequest,
+    RetrievedChunk,
+)
+
+LOCAL_CHUNKS: list[RetrievedChunk] = []
+
+
+def answer_with_retrieval(request: RuntimeRequest) -> GroundedAnswer:
+    """Use local fixture retrieval and citation enforcement."""
+
+    retrieval = InMemoryRetriever(LOCAL_CHUNKS).retrieve(
+        RetrievalRequest(
+            query=request.message,
+            agent_id="{{agent_id}}",
+            tenant_id=request.tenant_id,
+            user_id=request.user_id,
+            channel=request.channel,
+            thread_id=request.thread_id,
+        )
+    )
+    return CitationEnforcer().enforce(
+        answer="Replace this with grounded answer synthesis.",
+        retrieval_result=retrieval,
+        policy=CitationPolicy(require_citations=True, min_citations=1),
+    )

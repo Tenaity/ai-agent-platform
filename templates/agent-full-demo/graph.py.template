@@ -1,0 +1,40 @@
+"""Full demo graph skeleton for {{agent_id}}."""
+
+from snp_agent_core.contracts import RuntimeRequest, RuntimeResponse
+from snp_agent_core.contracts.status import AgentRunStatus
+
+from agents.{{agent_module}}.rag import answer_with_retrieval
+from agents.{{agent_module}}.safety import check_local_input
+from agents.{{agent_module}}.tools import summarize_fake_call
+
+
+class {{graph_runner_class}}:
+    """Runtime-compatible graph runner with safety, RAG, and tool placeholders."""
+
+    def invoke(self, request: RuntimeRequest, **_kwargs: object) -> RuntimeResponse:
+        """Run local-only demo boundaries without production integrations."""
+
+        safety_result = check_local_input(request)
+        if safety_result.decision.value != "allowed":
+            return RuntimeResponse(
+                thread_id=request.thread_id,
+                status=AgentRunStatus.REJECTED_BY_SAFETY,
+                answer=None,
+                metadata={"safety_decision": safety_result.decision.value},
+            )
+
+        grounded = answer_with_retrieval(request)
+        return RuntimeResponse(
+            thread_id=request.thread_id,
+            status=AgentRunStatus.COMPLETED if grounded.grounded else AgentRunStatus.FAILED,
+            answer=grounded.answer,
+            citations=grounded.citations,
+            tool_calls=[summarize_fake_call()],
+            metadata=grounded.metadata,
+        )
+
+
+def build_graph(**_kwargs: object) -> {{graph_runner_class}}:
+    """Build the graph runner used by the runtime adapter."""
+
+    return {{graph_runner_class}}()

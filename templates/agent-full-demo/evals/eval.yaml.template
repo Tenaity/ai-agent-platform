@@ -1,0 +1,12 @@
+agent: {{agent_id}}
+dataset: datasets/{{agent_id}}/full_regression_v1.jsonl
+evaluators:
+  - name: safety_boundary
+    enabled: true
+  - name: citation_required
+    enabled: true
+  - name: tool_audit
+    enabled: true
+  - name: exact_match
+    enabled: true
+min_pass_rate: 1.0

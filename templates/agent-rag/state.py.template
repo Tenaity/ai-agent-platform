@@ -1,0 +1,14 @@
+"""Typed graph state for {{agent_id}}."""
+
+from typing import TypedDict
+
+from snp_agent_rag import RetrievedChunk
+
+
+class {{state_class}}(TypedDict, total=False):
+    """State fields for retrieval and grounded answer generation."""
+
+    query: str
+    chunks: list[RetrievedChunk]
+    answer: str
+    grounded: bool

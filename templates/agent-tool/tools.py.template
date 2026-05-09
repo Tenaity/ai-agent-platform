@@ -1,0 +1,38 @@
+"""ToolSpec skeletons for {{agent_id}}."""
+
+from snp_agent_core.contracts.tools import ToolCallRecord
+from snp_agent_tools import ToolExecutionMode, ToolRegistry, ToolRiskLevel, ToolSpec
+
+
+def sample_tool_spec() -> ToolSpec:
+    """Describe a fake tool capability without implementing an external API."""
+
+    return ToolSpec(
+        name="{{agent_id}}.sample_tool",
+        description="Fake sample tool for contract and policy tests.",
+        input_schema={"type": "object", "properties": {}, "additionalProperties": False},
+        output_schema={"type": "object", "properties": {}, "additionalProperties": False},
+        risk_level=ToolRiskLevel.LOW,
+        execution_mode=ToolExecutionMode.FAKE,
+        required_scopes=[],
+        metadata={"template": "agent-tool"},
+    )
+
+
+def build_tool_registry() -> ToolRegistry:
+    """Build an in-memory registry for fake tool specs."""
+
+    registry = ToolRegistry()
+    registry.register(sample_tool_spec())
+    return registry
+
+
+def summarize_fake_call() -> ToolCallRecord:
+    """Return a safe fake audit summary for tests."""
+
+    return ToolCallRecord(
+        tool="{{agent_id}}.sample_tool",
+        status="completed",
+        input_summary="fake input",
+        output_summary="fake output",
+    )
