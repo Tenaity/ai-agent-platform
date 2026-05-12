@@ -20,7 +20,7 @@ without becoming framework packages.
 
 ## Current Capabilities
 
-After PR-020, the platform includes:
+After PR-021, the platform includes:
 
 - A monorepo scaffold for apps, reusable packages, domain agents, prompts,
   datasets, docs, and future infrastructure.
@@ -28,7 +28,9 @@ After PR-020, the platform includes:
   responses, citations, tool call records, run status, and lifecycle records.
 - A thin FastAPI Runtime API with health, version, agent discovery, manifest,
   and invoke routes.
-- A deterministic LangGraph customer service hello runtime.
+- A deterministic LangGraph customer service demo graph with safety precheck,
+  intent routing, local RAG fixtures, governed mock API tool execution, and
+  answer formatting.
 - LangSmith trace metadata construction, without requiring credentials locally.
 - Local regression eval datasets, evaluators, and runner.
 - Runtime lifecycle identifiers: `thread_id`, `request_id`, and `run_id`.
@@ -55,6 +57,9 @@ After PR-020, the platform includes:
   contract without wiring retrieval into runtime routes.
 - A deterministic customer-service mock API client and `ToolExecutor` adapter
   for production-like local tool workflow tests without calling company systems.
+- Customer-service graph tests that route policy questions to in-memory RAG,
+  container/booking/support requests to governed mock tools, and blocked input
+  away from retrieval and tools.
 
 ## Architecture
 
@@ -105,7 +110,7 @@ flowchart TD
 Current non-goals:
 
 - No real LLM calls yet.
-- No production RAG graph wiring yet.
+- No production Qdrant graph wiring yet.
 - No real production tool integrations yet.
 - No production Zalo, TMS, CRM, Billing, or support integrations yet.
 - No database persistence yet.
@@ -205,7 +210,7 @@ Template types:
 
 The current chatbot reference project lives in
 `examples/current_chatbot_demo`. It documents the reference agent shape,
-future Runtime API invocation, Qdrant retrieval, production-like mocked APIs,
+Runtime API invocation, future Qdrant retrieval, production-like mocked APIs,
 and n8n/Zalo webhook wiring without implementing production integrations.
 
 ## Local Commands
@@ -279,10 +284,11 @@ Completed:
 - PR-018: current chatbot demo reference project wiring
 - PR-019: Qdrant Retriever Adapter
 - PR-020: Production-like Mock API Adapter
+- PR-021: Wire Current Chatbot Demo Graph
 
 Next:
 
-- PR-021 n8n/Zalo Facade Endpoint
+- PR-022 n8n/Zalo Facade Endpoint
 
 ## Deeper Docs
 

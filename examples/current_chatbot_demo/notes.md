@@ -23,7 +23,8 @@ This PR wires:
 |---|---|
 | PR-019 | Qdrant Retriever Adapter — implement `Retriever` interface backed by Qdrant |
 | PR-020 | Production-like Mock API Adapter — implement `ToolExecutor` with audited mock responses |
-| PR-021 | n8n/Zalo Facade Endpoint — thin HTTP route for Zalo webhook normalization |
+| PR-021 | Wire Current Chatbot Demo Graph — deterministic safety, intent, RAG fixture, and mock tool branches |
+| PR-022 | n8n/Zalo Facade Endpoint — thin HTTP route for Zalo webhook normalization |
 
 ## Boundaries (Non-Negotiable)
 

@@ -218,8 +218,9 @@ answer = CitationEnforcer().enforce(
 )
 ```
 
-Runtime wiring into the customer service graph is tracked in PR-020 and
-PR-021.
+PR-021 wires the customer service graph with `InMemoryRetriever` fixtures for
+CI/local tests. Live Qdrant runtime wiring remains a future PR so the graph does
+not require an external vector database.
 
 ---
 

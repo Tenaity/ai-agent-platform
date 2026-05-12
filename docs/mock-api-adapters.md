@@ -72,9 +72,10 @@ It converts `ToolExecutionRequest.input` into typed Pydantic request models,
 calls the local mock client, and returns `ToolExecutionResult`. Invalid input or
 unknown tool names return safe failed results.
 
-The executor is not wired into runtime routes or graph nodes in this PR. Future
-graph wiring should compose it behind `PolicyAwareToolExecutor` and
-`AuditAwareToolExecutor`.
+PR-021 wires the executor into the customer-service demo graph behind
+`PolicyAwareToolExecutor`, `ToolGateway`, and `AuditAwareToolExecutor`. It is
+still not wired into runtime routes and still does not call any external
+company systems.
 
 ## Future Real Adapters
 

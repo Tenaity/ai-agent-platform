@@ -3,10 +3,12 @@
 ## Overview
 
 This document describes the architecture boundaries for the current chatbot demo
-reference project. Files in this directory are schema examples and placeholder
-code only. No real Qdrant, production APIs, LLM calls, or n8n routing are
-implemented here. PR-020 adds a local production-like mock API adapter under
-`agents/customer_service/mock_api`; it is not wired into this example graph yet.
+reference project. Files in this directory are schema examples, reference
+project notes, and placeholder code only. The runnable deterministic graph
+lives in `agents/customer_service`. No real Qdrant, production APIs, LLM calls,
+or n8n routing are implemented here. PR-021 wires the customer-service graph
+through local safety, intent routing, in-memory RAG fixtures, and governed
+production-like mock API tools.
 
 ---
 
@@ -27,12 +29,13 @@ flowchart TD
     Graph --> SafetyNode["safety_precheck node"]
     SafetyNode --> IntentNode["intent_routing node"]
 
-    IntentNode --> RAGBranch["RAG branch\n(intent = rag)"]
-    IntentNode --> ToolBranch["Tool branch\n(intent = tool)"]
-    IntentNode --> DirectBranch["Direct answer branch\n(intent = direct_answer)"]
+    IntentNode --> RAGBranch["RAG branch\n(intent = policy_question)"]
+    IntentNode --> ToolBranch["Tool branch\n(container / booking / ticket)"]
+    IntentNode --> DirectBranch["Fallback branch\n(intent = fallback)"]
 
-    RAGBranch --> QdrantRetriever["Future: Qdrant retriever adapter\n(implements Retriever interface)"]
-    QdrantRetriever --> RetrievalResult["RetrievalResult + citations"]
+    RAGBranch --> InMemoryRetriever["InMemoryRetriever fixtures\n(CI/local only)"]
+    InMemoryRetriever --> RetrievalResult["RetrievalResult + citations"]
+    RAGBranch -. future .-> QdrantRetriever["QdrantRetriever adapter\n(not wired in CI)"]
     RetrievalResult --> CitationEnforcer["CitationEnforcer\n(grounding enforcement)"]
 
     ToolBranch --> ToolGateway["ToolGateway\n(policy check)"]
@@ -54,11 +57,13 @@ flowchart TD
 
 | Node | Purpose | Platform Contract |
 |---|---|---|
-| `safety_precheck` | Rule-based input safety gate | `SafetyPipeline.check_input()` |
-| `intent_routing` | Classify message: rag / tool / direct_answer | Custom classifier (future LLM) |
-| `rag_branch_future_qdrant` | Retrieve relevant document chunks | `Retriever.retrieve()` → `RetrievalResult` |
-| `tool_branch_future_mock_api` | Execute domain tool via policy + audit path | `ToolGateway` → `ToolExecutor` → `ToolCallRecord` |
-| `answer_formatting` | Format final answer with optional citations | `CitationEnforcer` when citation policy active |
+| `safety_precheck` | Rule-based input safety gate | `SafetyPipeline.check()` |
+| `classify_intent` | Classify message: policy / container / booking / support / fallback | Deterministic keyword router |
+| `rag_answer` | Retrieve local policy fixtures and enforce citations | `Retriever.retrieve()` → `RetrievalResult` |
+| `container_tracking` | Execute container tracking through policy + audit path | `ToolGateway` → `ToolExecutor` → audit sink |
+| `booking_status` | Execute booking lookup through policy + audit path | `ToolGateway` → `ToolExecutor` → audit sink |
+| `support_ticket` | Execute deterministic mock ticket creation through policy + audit path | `ToolGateway` → `ToolExecutor` → audit sink |
+| `format_final_answer` | Format final answer with optional citations/tool status | `CitationEnforcer` when citation policy active |
 
 ---
 
@@ -79,7 +84,8 @@ runs user input through retrieval or tool calls.
 
 ### Retrieval Boundary
 
-The future Qdrant adapter must:
+The current graph tests use `InMemoryRetriever` and local fake chunks so CI
+does not require live Qdrant. The future Qdrant runtime wiring must:
 - Implement the platform `Retriever` interface
 - Return `RetrievalResult` objects (not raw Qdrant payloads)
 - Include `citation_id`, `text`, `uri`, and `source_id` per chunk
@@ -108,14 +114,15 @@ n8n is the external webhook handler. It must:
 - Call the Runtime API invoke endpoint (see `n8n/runtime_api_request.example.json`)
 - Route the `RuntimeResponse` answer back to Zalo
 
-A future n8n/Zalo facade endpoint (PR-021) may expose a dedicated HTTP route
+A future n8n/Zalo facade endpoint (PR-022) may expose a dedicated HTTP route
 for the normalized payload, but route handlers must stay thin.
 
 ---
 
 ## State Schema Reference
 
-The `CurrentChatbotDemoState` TypedDict in `agent/state.py` tracks:
+The runnable `CustomerServiceState` TypedDict in
+`agents/customer_service/state.py` tracks:
 
 | Field | Type | Purpose |
 |---|---|---|
@@ -123,16 +130,15 @@ The `CurrentChatbotDemoState` TypedDict in `agent/state.py` tracks:
 | `user_id` | str | Caller identity |
 | `channel` | str | Originating channel (zalo, api, etc.) |
 | `thread_id` | str | Conversation continuity key |
-| `request_id` | str | HTTP request correlation ID |
 | `message` | str | Raw user input |
 | `safety_decision` | str | Output of safety precheck node |
-| `intent` | str | Classified intent (rag / tool / direct_answer) |
-| `retrieval_query` | str | Reformulated query for retriever |
-| `retrieval_results` | list | RetrievalResult objects from retriever |
-| `tool_name` | str | Selected tool name |
-| `tool_result` | dict | Raw tool executor response |
-| `citations` | list | Citation objects for grounding enforcement |
-| `answer` | str | Final formatted answer |
+| `intent` | str | Classified intent: policy_question, container_tracking, booking_status, support_ticket, fallback |
+| `retrieval_result` | RetrievalResult | Retrieved chunks from the local/test retriever |
+| `grounded_answer` | GroundedAnswer | Citation-enforced answer for RAG branch |
+| `tool_result` | ToolExecutionResult | Governed tool execution result |
+| `final_answer` | str | Final formatted answer |
+| `handoff_required` | bool | Whether safety requires human handoff |
+| `metadata` | dict | Serializable graph metadata |
 
 ---
 
