@@ -20,7 +20,7 @@ without becoming framework packages.
 
 ## Current Capabilities
 
-After PR-021, the platform includes:
+After PR-022, the platform includes:
 
 - A monorepo scaffold for apps, reusable packages, domain agents, prompts,
   datasets, docs, and future infrastructure.
@@ -60,6 +60,8 @@ After PR-021, the platform includes:
 - Customer-service graph tests that route policy questions to in-memory RAG,
   container/booking/support requests to governed mock tools, and blocked input
   away from retrieval and tools.
+- A local Telegram polling worker that uses BotFather bots via `getUpdates`,
+  calls the Runtime API boundary, and requires no public HTTPS deployment.
 
 ## Architecture
 
@@ -221,6 +223,7 @@ make typecheck
 make test
 make eval
 make run-runtime-api
+make run-telegram-worker
 ```
 
 Install dependencies when setting up a fresh environment:
@@ -239,6 +242,12 @@ Run the runtime API locally:
 
 ```bash
 make run-runtime-api
+```
+
+Run the local Telegram polling worker after setting `TELEGRAM_BOT_TOKEN`:
+
+```bash
+make run-telegram-worker
 ```
 
 Runtime API examples:
@@ -285,10 +294,11 @@ Completed:
 - PR-019: Qdrant Retriever Adapter
 - PR-020: Production-like Mock API Adapter
 - PR-021: Wire Current Chatbot Demo Graph
+- PR-022: Telegram Polling Worker Local Demo
 
 Next:
 
-- PR-022 n8n/Zalo Facade Endpoint
+- PR-023 Telegram Webhook Facade Endpoint
 
 ## Deeper Docs
 
@@ -308,6 +318,7 @@ Next:
 - [Citation enforcement](docs/citations.md)
 - [Scaffold templates](docs/scaffold-template.md)
 - [Agent generator CLI](docs/agent-generator-cli.md)
+- [Telegram local demo](docs/telegram-local-demo.md)
 - [Agent development guide](docs/agent-development-guide.md)
 
 ## Architectural Guardrails
