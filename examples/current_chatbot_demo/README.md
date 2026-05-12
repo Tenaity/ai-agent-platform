@@ -36,6 +36,27 @@ See `architecture.md` for the full boundary diagram and node-level description.
 
 ---
 
+## Telegram Local Demo
+
+PR-022 adds `apps/telegram-worker`, a local long-polling worker for Telegram
+BotFather bots. This is a demo ingress path that uses Telegram `getUpdates`,
+normalizes text updates into `RuntimeRequest` payloads, calls the Runtime API,
+and sends the answer back with `sendMessage`.
+
+This mode is useful for local chatbot testing because it does not require
+public HTTPS, a webhook endpoint, deployment, or production integrations.
+
+Run the Runtime API and worker locally:
+
+```bash
+make run-runtime-api
+make run-telegram-worker
+```
+
+See [Telegram local demo](../../docs/telegram-local-demo.md) for setup details.
+
+---
+
 ## Directory Structure
 
 ```
@@ -141,7 +162,7 @@ shape that n8n receives from the Zalo platform.
 `n8n/runtime_api_request.example.json` shows the normalized `RuntimeRequest`
 that n8n constructs from the Zalo event before calling the Runtime API.
 
-A future n8n/Zalo facade endpoint (PR-022) will keep the route handler thin and
+A future n8n/Zalo facade endpoint (PR-023) will keep the route handler thin and
 delegate webhook normalization and validation to platform packages.
 
 ---
@@ -154,6 +175,7 @@ delegate webhook normalization and validation to platform packages.
 - No runtime route changes
 - No database persistence
 - No Docker deployment
+- No webhook endpoint
 - No n8n workflow wiring
 
 Follow-up PRs can add each integration independently while keeping platform
@@ -168,4 +190,5 @@ packages reusable and route handlers thin.
 | PR-019 | Qdrant Retriever Adapter |
 | PR-020 | Production-like Mock API Adapter |
 | PR-021 | Wire Current Chatbot Demo Graph |
-| PR-022 | n8n/Zalo Facade Endpoint |
+| PR-022 | Telegram Polling Worker Local Demo |
+| PR-023 | n8n/Zalo Facade Endpoint |

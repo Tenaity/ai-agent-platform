@@ -1,4 +1,4 @@
-.PHONY: install lint format typecheck test test-cov run-runtime-api eval
+.PHONY: install lint format typecheck test test-cov run-runtime-api run-telegram-worker eval
 
 AGENT ?= snp.customer_service.zalo
 DATASET ?= datasets/customer_service/regression_v1.jsonl
@@ -23,6 +23,10 @@ test-cov:
 
 run-runtime-api:
 	uv run uvicorn runtime_api.main:app --reload
+
+run-telegram-worker:
+	PYTHONPATH=apps/telegram-worker/src:packages/snp_agent_core/src \
+	uv run python -m telegram_worker.main
 
 eval:
 	PYTHONPATH=apps/eval-runner/src:apps/runtime-api/src:packages/snp_agent_core/src:packages/snp_agent_tools/src:packages/snp_agent_rag/src:packages/snp_agent_memory/src:packages/snp_agent_safety/src:packages/snp_agent_observability/src:packages/snp_agent_testing/src:. \
