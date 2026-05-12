@@ -5,8 +5,9 @@ domain-specific agents. It provides reusable contracts, graph execution
 plumbing, observability metadata, eval scaffolding, checkpoint configuration,
 tool governance policy, a deterministic safety pipeline skeleton, and
 domain-neutral RAG contracts with citation enforcement. The customer-service
-demo also has local production-like mock API adapters for tool testing. It is
-not a one-off chatbot.
+demo also has local production-like mock API adapters for tool testing and a
+deterministic graph that wires safety, intent routing, local RAG fixtures, and
+governed mock tool execution. It is not a one-off chatbot.
 
 It also includes reusable project templates and examples so new agent projects
 can start from framework-aligned scaffolds instead of copying an existing
@@ -103,6 +104,9 @@ domain-neutral and must not import templates or examples.
 - Customer-service mock API adapter: production-like local request/response
   schemas, deterministic fixture-backed client, and `ToolExecutor` adapter for
   testing current chatbot demo tool workflows without real company systems.
+- Customer-service demo graph: deterministic safety precheck, keyword intent
+  routing, in-memory RAG fixtures with citation enforcement, ToolGateway-backed
+  mock API tool branches, and fallback formatting without LLM calls.
 - Templates: reusable project scaffolds for basic, RAG, tool, and full demo
   agents.
 - Examples: reference implementation structures such as
@@ -145,9 +149,11 @@ sequenceDiagram
     API-->>Client: Response + X-Request-ID
 ```
 
-The current customer service graph is deterministic. It returns a stable hello
-answer and does not call an LLM, a retrieval system, a tool adapter, or an
-external API.
+The current customer service graph is deterministic. It keeps the stable hello
+fallback for existing eval compatibility, routes policy questions through
+local in-memory RAG fixtures, and routes tool intents through governed
+production-like mock API adapters. It does not call an LLM, real Qdrant, real
+company systems, or external APIs.
 
 ## Runtime Identifiers
 
@@ -183,11 +189,12 @@ flowchart TD
     Approval -- No --> Allowed["Allowed"]
 ```
 
-`ToolGateway` returns policy decisions only. It does not execute tools or call
-third-party systems. `PolicyAwareToolExecutor` composes gateway policy with a
-wrapped executor interface. PR-020 adds a customer-service mock executor for
-local tests only; it is not a production integration and is not wired into route
-handlers.
+`ToolGateway` returns policy decisions only. It does not call third-party
+systems. `PolicyAwareToolExecutor` composes gateway policy with a wrapped
+executor interface. PR-020 adds a customer-service mock executor for local
+tests only. PR-021 wires that executor into the customer-service demo graph
+behind ToolGateway policy and audit, but it is still not a production
+integration and is not wired into route handlers.
 
 ## Safety Boundary
 
@@ -218,7 +225,7 @@ marked ungrounded with missing citations instead of fabricating sources.
 ## Current Non-Goals
 
 - No real LLM calls yet.
-- No production RAG wiring to a graph yet (QdrantRetriever exists but is not wired).
+- No production Qdrant wiring to a graph yet (QdrantRetriever exists but is not wired).
 - No real production tool integrations yet.
 - No production Zalo, TMS, CRM, Billing, or support integrations yet.
 - No database persistence yet.
@@ -248,6 +255,7 @@ marked ungrounded with missing citations instead of fabricating sources.
 - PR-018: current chatbot demo reference project wiring
 - PR-019: Qdrant retriever adapter
 - PR-020: production-like mock API adapter
+- PR-021: wire current chatbot demo graph
 
 ## Deeper Docs
 

@@ -2,8 +2,8 @@
 
 This directory is a **reference project** that documents how the SNP AI Agent
 Platform scaffold applies to the user's current customer-service chatbot demo.
-It is project structure, schemas, and documentation only — not production
-runtime code.
+It is project structure, schemas, documentation, and deterministic local demo
+wiring — not production runtime integration code.
 
 The demo lives under `examples/` because this repository is a platform
 framework, not a single chatbot implementation. Real production logic belongs in
@@ -23,7 +23,7 @@ Zalo (user sends message)
   → Agent graph executes:
       Safety precheck node
       → Intent routing node
-      → RAG branch (future Qdrant retriever adapter)
+      → RAG branch (in-memory fixtures now, future Qdrant retriever adapter)
           → RetrievalResult + CitationEnforcer
       → Tool branch (production-like mock API adapters)
           → ToolGateway policy check → executor → audit record
@@ -72,20 +72,22 @@ examples/current_chatbot_demo/
 
 ## Agent Graph Shape (Reference)
 
-The reference agent documents this intended future graph:
+The customer-service demo graph in `agents/customer_service/graph.py` now wires
+this deterministic local shape:
 
 ```
 Input
 → Safety precheck         (SafetyPipeline: rule-based + optional PII redaction)
-→ Intent routing          (classify: rag / tool / direct_answer)
-→ RAG branch              (future Qdrant retriever → RetrievalResult + citations)
+→ Intent routing          (deterministic keyword rules)
+→ RAG branch              (InMemoryRetriever fixtures → RetrievalResult + citations)
 → Tool branch             (mock API adapters → ToolGateway → audit)
 → Answer formatting       (CitationEnforcer when citations required)
 → RuntimeResponse
 ```
 
-Placeholder code in `agent/graph.py` documents the step names without
-implementing real retrieval, tool execution, or LLM calls.
+The example `agent/graph.py` remains a documentation sketch, while the runnable
+demo graph lives under `agents/customer_service`. Tests use local fixtures and
+the production-like mock API adapter only.
 
 ---
 
@@ -126,9 +128,8 @@ All responses follow the platform envelope:
 PR-020 adds a deterministic local adapter in
 `agents/customer_service/mock_api/`. It implements the platform `ToolExecutor`
 interface for the customer-service tools without making external HTTP calls.
-
-Future graph wiring must compose this executor behind `ToolGateway` policy and
-tool call audit before any production-like workflow uses it.
+PR-021 composes it behind `ToolGateway`, `PolicyAwareToolExecutor`, and
+`AuditAwareToolExecutor` inside the customer-service demo graph.
 
 ---
 
@@ -140,7 +141,7 @@ shape that n8n receives from the Zalo platform.
 `n8n/runtime_api_request.example.json` shows the normalized `RuntimeRequest`
 that n8n constructs from the Zalo event before calling the Runtime API.
 
-A future n8n/Zalo facade endpoint (PR-021) will keep the route handler thin and
+A future n8n/Zalo facade endpoint (PR-022) will keep the route handler thin and
 delegate webhook normalization and validation to platform packages.
 
 ---
@@ -166,4 +167,5 @@ packages reusable and route handlers thin.
 |---|---|
 | PR-019 | Qdrant Retriever Adapter |
 | PR-020 | Production-like Mock API Adapter |
-| PR-021 | n8n/Zalo Facade Endpoint |
+| PR-021 | Wire Current Chatbot Demo Graph |
+| PR-022 | n8n/Zalo Facade Endpoint |

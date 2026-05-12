@@ -54,9 +54,12 @@ and returns an object with an `invoke()` method, typically a compiled LangGraph
 `StateGraph`. The state schema should be a typed state object, such as a
 `TypedDict`, with fields needed by the runtime adapter and graph nodes.
 
-The current sample graph remains deterministic and local. Do not add real LLM
-provider calls, real tools, persistence, RAG, or production integrations until
-the platform contracts for those concerns exist.
+The current customer-service sample graph remains deterministic and local. It
+wires safety precheck, keyword intent routing, in-memory RAG fixtures, citation
+enforcement, ToolGateway policy, tool audit, and the production-like mock API
+adapter. Do not add real LLM provider calls, real production tools,
+persistence, live retrieval services, or production integrations in graph code
+without an explicit PR for those boundaries.
 
 ## Tool Specs
 
@@ -116,6 +119,9 @@ domain-specific graph nodes. Future PRs can add prompt-injection detection,
 jailbreak detection, document safety, richer PII policy, and provider-backed
 moderation through the `SafetyChecker` interface.
 
+Customer-service graph tests inject a custom `SafetyPipeline` to prove blocked
+input stops before RAG or tool branches execute.
+
 ## RAG And Citations
 
 PR-015 adds RAG contracts but no production retrieval infrastructure.
@@ -141,6 +147,11 @@ citations, answers should be marked ungrounded if retrieval returns no chunks or
 too few chunks. Future Qdrant, pgvector, Neo4j, GraphRAG, reranking, and query
 rewriting work should return `RetrievalResult` and reuse the same citation
 enforcement contract.
+
+The customer-service demo graph uses `InMemoryRetriever` fixtures for policy
+questions so CI and local tests do not require Qdrant. `QdrantRetriever` exists
+as an adapter contract implementation, but it is not required by the graph
+tests and is not wired to live infrastructure in this PR.
 
 ## Runtime Contract Examples
 
