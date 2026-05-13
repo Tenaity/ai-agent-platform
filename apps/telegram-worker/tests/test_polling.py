@@ -5,7 +5,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from telegram_worker.polling import log_startup, poll_once, process_update
+from telegram_worker.client import RuntimeAgentNotFoundError
+from telegram_worker.polling import AGENT_NOT_FOUND_MESSAGE, log_startup, poll_once, process_update
 from telegram_worker.settings import TelegramWorkerSettings
 
 
@@ -36,6 +37,17 @@ class FakeRuntimeApiClient:
     def invoke_agent(self, agent_id: str, payload: dict[str, Any]) -> dict[str, Any]:
         self.invocations.append({"agent_id": agent_id, "payload": payload})
         return {"thread_id": payload["thread_id"], "status": "completed", "answer": self.answer}
+
+
+class AgentNotFoundRuntimeApiClient:
+    """Runtime API fake that simulates a 404 for the configured agent."""
+
+    def __init__(self) -> None:
+        self.invocations: list[dict[str, Any]] = []
+
+    def invoke_agent(self, agent_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+        self.invocations.append({"agent_id": agent_id, "payload": payload})
+        raise RuntimeAgentNotFoundError(agent_id)
 
 
 def _settings(**overrides: Any) -> TelegramWorkerSettings:
@@ -123,3 +135,24 @@ def test_bot_token_is_not_logged(caplog: Any) -> None:
 
     assert "secret-token-value" not in caplog.text
     assert "customer_service" in caplog.text
+
+
+def test_wrong_agent_id_logs_clear_runtime_404_message(caplog: Any) -> None:
+    telegram_client = FakeTelegramClient()
+    runtime_client = AgentNotFoundRuntimeApiClient()
+    settings = _settings(TELEGRAM_AGENT_ID="missing_agent")
+
+    with caplog.at_level(logging.ERROR):
+        processed = process_update(
+            _text_update(),
+            telegram_client=telegram_client,
+            runtime_client=runtime_client,
+            settings=settings,
+        )
+
+    assert processed is False
+    assert "missing_agent" in caplog.text
+    assert "GET /v1/agents" in caplog.text
+    assert telegram_client.sent_messages == [
+        {"chat_id": 123456, "text": AGENT_NOT_FOUND_MESSAGE}
+    ]
