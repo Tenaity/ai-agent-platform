@@ -7,6 +7,7 @@ from typing import Any, Protocol
 
 from telegram_worker.client import RuntimeAgentNotFoundError
 from telegram_worker.commands import TelegramCommandRouter
+from telegram_worker.human_loop import TelegramHumanLoopService
 from telegram_worker.normalizer import normalize_update
 from telegram_worker.settings import TelegramWorkerSettings
 from telegram_worker.showcase import extract_trace_metadata, map_showcase_command
@@ -71,6 +72,7 @@ def process_update(
     reply_to_unsupported: bool = False,
     command_router: TelegramCommandRouter | None = None,
     trace_store: TraceMetadataStore | None = None,
+    human_loop_service: TelegramHumanLoopService | None = None,
 ) -> bool:
     """Process one Telegram update.
 
@@ -89,6 +91,16 @@ def process_update(
     chat_id = payload["metadata"]["telegram_chat_id"]
     router = command_router or TelegramCommandRouter()
     parsed = router.parse(str(payload["message"]))
+    human_service = human_loop_service or TelegramHumanLoopService()
+    human_response = human_service.handle(
+        parsed,
+        runtime_payload=payload,
+        agent_id=settings.telegram_agent_id,
+    )
+    if human_response is not None:
+        telegram_client.send_message(chat_id, human_response)
+        return False
+
     action = map_showcase_command(
         parsed,
         payload,
@@ -129,6 +141,7 @@ def poll_once(
     offset: int | None,
     command_router: TelegramCommandRouter | None = None,
     trace_store: TraceMetadataStore | None = None,
+    human_loop_service: TelegramHumanLoopService | None = None,
 ) -> int | None:
     """Fetch one batch of updates, process them, and return the next offset."""
 
@@ -145,6 +158,7 @@ def poll_once(
             settings=settings,
             command_router=command_router,
             trace_store=trace_store,
+            human_loop_service=human_loop_service,
         )
         update_id = update.get("update_id")
         if isinstance(update_id, int):
@@ -165,6 +179,7 @@ def run_polling(
     offset: int | None = None
     command_router = TelegramCommandRouter()
     trace_store = TraceMetadataStore()
+    human_loop_service = TelegramHumanLoopService()
     while True:
         offset = poll_once(
             telegram_client=telegram_client,
@@ -173,6 +188,7 @@ def run_polling(
             offset=offset,
             command_router=command_router,
             trace_store=trace_store,
+            human_loop_service=human_loop_service,
         )
 
 

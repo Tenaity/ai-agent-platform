@@ -37,10 +37,10 @@ def test_showcase_returns_demo_script() -> None:
 
 
 def test_placeholder_commands_return_local_response() -> None:
-    parsed = TelegramCommandRouter().parse("/human yêu cầu hoàn phí")
-    action = map_showcase_command(parsed, _payload("/human yêu cầu hoàn phí"))
+    parsed = TelegramCommandRouter().parse("/memo remember booking BK123")
+    action = map_showcase_command(parsed, _payload("/memo remember booking BK123"))
 
-    assert action.local_response == "Human-in-the-loop showcase is planned for PR-024."
+    assert action.local_response == "Memo showcase is planned for PR-025."
     assert action.runtime_payload is None
 
 

@@ -47,6 +47,9 @@ flowchart TD
     ToolRegistry --> ToolSpec["ToolSpec"]
     AuditWrapper --> AuditSink["ToolCallAuditSink"]
 
+    AgentGraph --> Approval["Human Approval Boundary"]
+    Approval --> ApprovalStore["InMemoryApprovalStore"]
+
     Invoke --> TraceMeta["Trace Metadata Builder"]
     TraceMeta --> LangSmith["LangSmith Tracing Skeleton"]
 
@@ -101,6 +104,9 @@ domain-neutral and must not import templates or examples.
 - Tool audit: `ToolCallAuditRecord`, `AuditAwareToolExecutor`, and
   `InMemoryToolCallAuditSink`. Produces security/ops audit records separate
   from LangSmith traces.
+- Human-in-the-loop: reusable approval request contracts, approval status/risk
+  enums, store interface, and local-only `InMemoryApprovalStore` for demo
+  approval workflows without database persistence.
 - Customer-service mock API adapter: production-like local request/response
   schemas, deterministic fixture-backed client, and `ToolExecutor` adapter for
   testing current chatbot demo tool workflows without real company systems.
@@ -204,6 +210,17 @@ PR-014 includes only deterministic local rules and simple PII redaction
 patterns. It does not use an external moderation provider, an LLM judge, RAG,
 memory, persistence, or production integrations.
 
+## Human Approval Boundary
+
+Human-in-the-loop is a runtime control pattern for high-risk actions. PR-024
+adds reusable approval contracts and an in-memory store under
+`snp_agent_core.human_loop`. The Telegram worker composes those primitives for
+local `/human`, `/approve`, `/reject`, and `/approvals` commands, but packages
+do not import Telegram code.
+
+This is local/demo-only. There is no database persistence, production action
+execution, webhook, deployment, or LangGraph interrupt/resume wiring yet.
+
 ## RAG And Citations
 
 PR-015 adds RAG contracts and citation enforcement only. `Retriever` is an
@@ -231,6 +248,7 @@ marked ungrounded with missing citations instead of fabricating sources.
 - No database persistence yet.
 - No Memory Manager yet.
 - No provider-backed moderation yet.
+- No durable human approval persistence yet.
 - No production deployment scaffolding yet.
 
 ## PR History
@@ -256,6 +274,9 @@ marked ungrounded with missing citations instead of fabricating sources.
 - PR-019: Qdrant retriever adapter
 - PR-020: production-like mock API adapter
 - PR-021: wire current chatbot demo graph
+- PR-022: Telegram polling worker local demo
+- PR-023: Telegram showcase command router
+- PR-024: human-in-the-loop showcase
 
 ## Deeper Docs
 
@@ -270,6 +291,7 @@ marked ungrounded with missing citations instead of fabricating sources.
 - [Tool call audit](../tool-audit.md)
 - [Mock API adapters](../mock-api-adapters.md)
 - [Safety pipeline](../safety-pipeline.md)
+- [Human-in-the-loop](../human-in-the-loop.md)
 - [RAG contracts](../rag.md)
 - [Qdrant retriever adapter](../qdrant-retriever.md)
 - [Citation enforcement](../citations.md)

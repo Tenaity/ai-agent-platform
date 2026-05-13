@@ -39,9 +39,10 @@ See `architecture.md` for the full boundary diagram and node-level description.
 ## Telegram Local Demo
 
 PR-022 adds `apps/telegram-worker`, a local long-polling worker for Telegram
-BotFather bots. PR-023 turns it into a local showcase cockpit. It uses Telegram
-`getUpdates`, normalizes text updates and showcase commands into
-`RuntimeRequest` payloads, calls the Runtime API, and sends the answer back with
+BotFather bots. PR-023 turns it into a local showcase cockpit. PR-024 adds
+local human-in-the-loop approval commands. The worker uses Telegram
+`getUpdates`, normalizes text updates and showcase commands, calls the Runtime
+API when a command maps to agent behavior, and sends answers back with
 `sendMessage`.
 
 This mode is useful for local chatbot testing because it does not require
@@ -61,9 +62,10 @@ for setup details.
 
 Start with `/showcase` in Telegram to get the recommended demo script. Commands
 such as `/rag`, `/tool container`, `/booking`, and `/ticket` route through the
-Runtime API. Future capability commands such as `/human`, `/memo`, `/mcp`,
-`/a2a`, and `/deepagent` return local placeholder responses until their platform
-PRs exist.
+Runtime API. `/human`, `/approve`, `/reject`, and `/approvals` are local demo
+commands backed by reusable in-memory approval contracts. Future capability
+commands such as `/memo`, `/mcp`, `/a2a`, and `/deepagent` return local
+placeholder responses until their platform PRs exist.
 
 ---
 
@@ -187,6 +189,7 @@ delegate webhook normalization and validation to platform packages.
 - No Docker deployment
 - No webhook endpoint
 - No n8n workflow wiring
+- No durable human approval persistence yet
 
 Follow-up PRs can add each integration independently while keeping platform
 packages reusable and route handlers thin.
@@ -201,4 +204,5 @@ packages reusable and route handlers thin.
 | PR-020 | Production-like Mock API Adapter |
 | PR-021 | Wire Current Chatbot Demo Graph |
 | PR-022 | Telegram Polling Worker Local Demo |
-| PR-023 | n8n/Zalo Facade Endpoint |
+| PR-023 | Telegram Showcase Command Router |
+| PR-024 | Human-in-the-loop Showcase |
