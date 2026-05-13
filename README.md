@@ -61,7 +61,8 @@ After PR-022, the platform includes:
   container/booking/support requests to governed mock tools, and blocked input
   away from retrieval and tools.
 - A local Telegram polling worker that uses BotFather bots via `getUpdates`,
-  calls the Runtime API boundary, and requires no public HTTPS deployment.
+  calls the Runtime API boundary, exposes showcase commands, and requires no
+  public HTTPS deployment.
 
 ## Architecture
 

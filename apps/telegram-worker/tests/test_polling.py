@@ -6,7 +6,13 @@ import logging
 from typing import Any
 
 from telegram_worker.client import RuntimeAgentNotFoundError
-from telegram_worker.polling import AGENT_NOT_FOUND_MESSAGE, log_startup, poll_once, process_update
+from telegram_worker.polling import (
+    AGENT_NOT_FOUND_MESSAGE,
+    TraceMetadataStore,
+    log_startup,
+    poll_once,
+    process_update,
+)
 from telegram_worker.settings import TelegramWorkerSettings
 
 
@@ -36,7 +42,12 @@ class FakeRuntimeApiClient:
 
     def invoke_agent(self, agent_id: str, payload: dict[str, Any]) -> dict[str, Any]:
         self.invocations.append({"agent_id": agent_id, "payload": payload})
-        return {"thread_id": payload["thread_id"], "status": "completed", "answer": self.answer}
+        return {
+            "thread_id": payload["thread_id"],
+            "status": "completed",
+            "answer": self.answer,
+            "metadata": {"request_id": "req_123", "run_id": "run_456"},
+        }
 
 
 class AgentNotFoundRuntimeApiClient:
@@ -62,12 +73,15 @@ def _settings(**overrides: Any) -> TelegramWorkerSettings:
     return TelegramWorkerSettings.model_validate(values)
 
 
-def _text_update(update_id: int = 1001) -> dict[str, Any]:
+def _text_update(
+    update_id: int = 1001,
+    text: str = "giờ làm việc hỗ trợ là gì?",
+) -> dict[str, Any]:
     return {
         "update_id": update_id,
         "message": {
             "message_id": 55,
-            "text": "giờ làm việc hỗ trợ là gì?",
+            "text": text,
             "chat": {"id": 123456},
             "from": {"username": "demo_user"},
         },
@@ -91,6 +105,64 @@ def test_process_update_calls_runtime_api_client_and_sends_answer() -> None:
     assert telegram_client.sent_messages == [
         {"chat_id": 123456, "text": "Support is open 08:00-17:00."}
     ]
+
+
+def test_help_command_returns_local_response_without_runtime_call() -> None:
+    telegram_client = FakeTelegramClient()
+    runtime_client = FakeRuntimeApiClient()
+
+    processed = process_update(
+        _text_update(text="/help"),
+        telegram_client=telegram_client,
+        runtime_client=runtime_client,
+        settings=_settings(),
+    )
+
+    assert processed is False
+    assert runtime_client.invocations == []
+    assert "/showcase" in telegram_client.sent_messages[0]["text"]
+
+
+def test_trace_command_returns_last_metadata_when_available() -> None:
+    telegram_client = FakeTelegramClient()
+    runtime_client = FakeRuntimeApiClient(answer="Done")
+    trace_store = TraceMetadataStore()
+
+    process_update(
+        _text_update(text="/booking BK123"),
+        telegram_client=telegram_client,
+        runtime_client=runtime_client,
+        settings=_settings(),
+        trace_store=trace_store,
+    )
+    processed = process_update(
+        _text_update(text="/trace"),
+        telegram_client=telegram_client,
+        runtime_client=runtime_client,
+        settings=_settings(),
+        trace_store=trace_store,
+    )
+
+    assert processed is False
+    assert "request_id=req_123" in telegram_client.sent_messages[-1]["text"]
+    assert "run_id=run_456" in telegram_client.sent_messages[-1]["text"]
+    assert "thread_id=telegram:123456" in telegram_client.sent_messages[-1]["text"]
+
+
+def test_normal_free_text_still_invokes_runtime_api_path() -> None:
+    telegram_client = FakeTelegramClient()
+    runtime_client = FakeRuntimeApiClient(answer="Free text answer")
+
+    processed = process_update(
+        _text_update(text="hello"),
+        telegram_client=telegram_client,
+        runtime_client=runtime_client,
+        settings=_settings(),
+    )
+
+    assert processed is True
+    assert runtime_client.invocations[0]["payload"]["message"] == "hello"
+    assert telegram_client.sent_messages == [{"chat_id": 123456, "text": "Free text answer"}]
 
 
 def test_process_update_ignores_missing_text_without_runtime_call() -> None:

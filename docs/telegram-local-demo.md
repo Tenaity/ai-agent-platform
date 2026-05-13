@@ -1,7 +1,8 @@
 # Telegram Local Demo
 
 PR-022 adds a local Telegram polling worker so a BotFather-created bot can chat
-with the local Runtime API without public HTTPS deployment.
+with the local Runtime API without public HTTPS deployment. PR-023 turns that
+worker into a lightweight showcase cockpit for platform capabilities.
 
 ## Why Polling
 
@@ -61,6 +62,49 @@ POST /v1/agents/{agent_id}/invoke
 
 The worker sends the Runtime API answer back through Telegram `sendMessage`.
 
+## Showcase Commands
+
+Telegram is the local AI Agent showcase cockpit. Commands are deterministic demo
+triggers that either rewrite the user text into a RuntimeRequest-compatible
+message or return a local placeholder response for a future platform capability.
+
+Supported commands:
+
+- `/help`
+- `/showcase`
+- `/rag <question>`
+- `/tool container <container_no>`
+- `/booking <booking_no>`
+- `/ticket <message>`
+- `/trace`
+- `/human <message>`
+- `/memo <message>`
+- `/skill <command>`
+- `/mcp <command>`
+- `/a2a <message>`
+- `/acp <message>`
+- `/deepagent <task>`
+- `/eval`
+
+Recommended demo script:
+
+```text
+1. /rag giờ làm việc
+2. /tool container ABCD1234567
+3. /booking BK123
+4. /ticket Tôi cần hỗ trợ
+5. /trace
+6. /human yêu cầu hoàn phí lưu bãi
+7. /memo remember booking BK123
+8. /mcp list
+9. /a2a ask billing_agent giải thích phí
+10. /deepagent lập kế hoạch xử lý khiếu nại
+```
+
+Some commands are placeholders for future PRs. The worker remains thin: it does
+not own RAG, tool, human-loop, memory, MCP, A2A/ACP, or DeepAgents business
+logic. Capability logic belongs in agents or reusable packages.
+
 ## Boundary
 
 The worker is an integration/demo app under `apps/telegram-worker`. It calls the
@@ -70,5 +114,6 @@ or external service call is required in CI.
 
 ## Future Work
 
-Future PRs can add webhook mode, deployment, richer observability, and
+Future PRs can add real human-in-the-loop, memory/memo, skills, MCP, agent
+interop, DeepAgents, webhook mode, deployment, richer observability, and
 Grafana/Loki. Those should stay separate from this local polling demo.

@@ -39,9 +39,10 @@ See `architecture.md` for the full boundary diagram and node-level description.
 ## Telegram Local Demo
 
 PR-022 adds `apps/telegram-worker`, a local long-polling worker for Telegram
-BotFather bots. This is a demo ingress path that uses Telegram `getUpdates`,
-normalizes text updates into `RuntimeRequest` payloads, calls the Runtime API,
-and sends the answer back with `sendMessage`.
+BotFather bots. PR-023 turns it into a local showcase cockpit. It uses Telegram
+`getUpdates`, normalizes text updates and showcase commands into
+`RuntimeRequest` payloads, calls the Runtime API, and sends the answer back with
+`sendMessage`.
 
 This mode is useful for local chatbot testing because it does not require
 public HTTPS, a webhook endpoint, deployment, or production integrations.
@@ -57,6 +58,12 @@ make run-telegram-worker
 Confirm `TELEGRAM_AGENT_ID` matches one of the returned agent ids before
 starting the worker. See [Telegram local demo](../../docs/telegram-local-demo.md)
 for setup details.
+
+Start with `/showcase` in Telegram to get the recommended demo script. Commands
+such as `/rag`, `/tool container`, `/booking`, and `/ticket` route through the
+Runtime API. Future capability commands such as `/human`, `/memo`, `/mcp`,
+`/a2a`, and `/deepagent` return local placeholder responses until their platform
+PRs exist.
 
 ---
 
