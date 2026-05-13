@@ -19,7 +19,11 @@ HELP_RESPONSE = """Commands:
 /booking <booking_no> - route to booking status
 /ticket <message> - route to support ticket creation
 /trace - show last Runtime API metadata
-/human, /memo, /skill, /mcp, /a2a, /acp, /deepagent, /eval - future showcases"""
+/human <message> - create a pending human approval
+/approve <approval_id> - approve a pending approval
+/reject <approval_id> - reject a pending approval
+/approvals - list pending approvals
+/memo, /skill, /mcp, /a2a, /acp, /deepagent, /eval - future showcases"""
 
 SHOWCASE_RESPONSE = """Recommended demo script:
 1. /rag giờ làm việc
@@ -34,7 +38,6 @@ SHOWCASE_RESPONSE = """Recommended demo script:
 10. /deepagent lập kế hoạch xử lý khiếu nại"""
 
 PLACEHOLDER_RESPONSES: dict[TelegramCommand, str] = {
-    TelegramCommand.HUMAN: "Human-in-the-loop showcase is planned for PR-024.",
     TelegramCommand.MEMO: "Memo showcase is planned for PR-025.",
     TelegramCommand.SKILL: "Skills showcase is planned for PR-026.",
     TelegramCommand.MCP: "MCP showcase is planned for PR-027.",

@@ -2,7 +2,8 @@
 
 PR-022 adds a local Telegram polling worker so a BotFather-created bot can chat
 with the local Runtime API without public HTTPS deployment. PR-023 turns that
-worker into a lightweight showcase cockpit for platform capabilities.
+worker into a lightweight showcase cockpit for platform capabilities. PR-024
+adds local human-in-the-loop approval commands.
 
 ## Why Polling
 
@@ -78,6 +79,9 @@ Supported commands:
 - `/ticket <message>`
 - `/trace`
 - `/human <message>`
+- `/approve <approval_id>`
+- `/reject <approval_id>`
+- `/approvals`
 - `/memo <message>`
 - `/skill <command>`
 - `/mcp <command>`
@@ -102,8 +106,13 @@ Recommended demo script:
 ```
 
 Some commands are placeholders for future PRs. The worker remains thin: it does
-not own RAG, tool, human-loop, memory, MCP, A2A/ACP, or DeepAgents business
-logic. Capability logic belongs in agents or reusable packages.
+not own RAG, tool, memory, MCP, A2A/ACP, or DeepAgents business logic.
+Capability logic belongs in agents or reusable packages.
+
+Human-in-the-loop commands are local demo commands backed by the reusable
+`snp_agent_core.human_loop` contracts and `InMemoryApprovalStore`. They do not
+execute real production actions, persist to a database, or call Runtime API in
+PR-024.
 
 ## Boundary
 
@@ -114,6 +123,7 @@ or external service call is required in CI.
 
 ## Future Work
 
-Future PRs can add real human-in-the-loop, memory/memo, skills, MCP, agent
-interop, DeepAgents, webhook mode, deployment, richer observability, and
-Grafana/Loki. Those should stay separate from this local polling demo.
+Future PRs can add durable approval persistence, LangGraph interrupt/resume,
+memory/memo, skills, MCP, agent interop, DeepAgents, webhook mode, deployment,
+richer observability, and Grafana/Loki. Those should stay separate from this
+local polling demo.

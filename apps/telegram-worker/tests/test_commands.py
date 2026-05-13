@@ -38,6 +38,14 @@ def test_command_parser_detects_ticket() -> None:
     assert parsed.args == "Tôi cần hỗ trợ"
 
 
+def test_command_parser_detects_approval_commands() -> None:
+    router = TelegramCommandRouter()
+
+    assert router.parse("/approve approval-123").command == TelegramCommand.APPROVE
+    assert router.parse("/reject approval-123").command == TelegramCommand.REJECT
+    assert router.parse("/approvals").command == TelegramCommand.APPROVALS
+
+
 def test_free_text_does_not_become_command() -> None:
     parsed = TelegramCommandRouter().parse("giờ làm việc hỗ trợ là gì?")
 
