@@ -6,8 +6,10 @@ import logging
 from typing import Any, Protocol
 
 from telegram_worker.client import RuntimeAgentNotFoundError
+from telegram_worker.commands import TelegramCommandRouter
 from telegram_worker.normalizer import normalize_update
 from telegram_worker.settings import TelegramWorkerSettings
+from telegram_worker.showcase import extract_trace_metadata, map_showcase_command
 
 LOGGER = logging.getLogger(__name__)
 UNSUPPORTED_MESSAGE = "This local demo bot only supports text messages."
@@ -35,6 +37,25 @@ class RuntimeApiClientProtocol(Protocol):
         """Invoke an agent via the Runtime API."""
 
 
+class TraceMetadataStore:
+    """In-memory last-response metadata keyed by Telegram chat id."""
+
+    def __init__(self) -> None:
+        """Create an empty metadata store."""
+
+        self._metadata_by_chat_id: dict[str, dict[str, str]] = {}
+
+    def get(self, chat_id: int | str) -> dict[str, str] | None:
+        """Return last metadata for a chat if available."""
+
+        return self._metadata_by_chat_id.get(str(chat_id))
+
+    def set(self, chat_id: int | str, metadata: dict[str, str]) -> None:
+        """Store last metadata for a chat."""
+
+        self._metadata_by_chat_id[str(chat_id)] = metadata
+
+
 def log_startup(settings: TelegramWorkerSettings) -> None:
     """Log startup metadata without exposing the Telegram bot token."""
 
@@ -48,6 +69,8 @@ def process_update(
     runtime_client: RuntimeApiClientProtocol,
     settings: TelegramWorkerSettings,
     reply_to_unsupported: bool = False,
+    command_router: TelegramCommandRouter | None = None,
+    trace_store: TraceMetadataStore | None = None,
 ) -> bool:
     """Process one Telegram update.
 
@@ -63,17 +86,37 @@ def process_update(
                 telegram_client.send_message(chat_id, UNSUPPORTED_MESSAGE)
         return False
 
+    chat_id = payload["metadata"]["telegram_chat_id"]
+    router = command_router or TelegramCommandRouter()
+    parsed = router.parse(str(payload["message"]))
+    action = map_showcase_command(
+        parsed,
+        payload,
+        last_trace=trace_store.get(chat_id) if trace_store is not None else None,
+    )
+    if action.local_response is not None:
+        telegram_client.send_message(chat_id, action.local_response)
+        return False
+
+    runtime_payload = action.runtime_payload or payload
     try:
-        response = runtime_client.invoke_agent(settings.telegram_agent_id, payload)
+        response = runtime_client.invoke_agent(settings.telegram_agent_id, runtime_payload)
     except RuntimeAgentNotFoundError as exc:
         LOGGER.error(str(exc))
-        chat_id = payload["metadata"]["telegram_chat_id"]
         telegram_client.send_message(chat_id, AGENT_NOT_FOUND_MESSAGE)
         return False
 
     answer = response.get("answer")
     text = answer if isinstance(answer, str) and answer.strip() else EMPTY_ANSWER_MESSAGE
-    chat_id = payload["metadata"]["telegram_chat_id"]
+    if trace_store is not None:
+        trace_store.set(
+            chat_id,
+            extract_trace_metadata(
+                response=response,
+                runtime_payload=runtime_payload,
+                agent_id=settings.telegram_agent_id,
+            ),
+        )
     telegram_client.send_message(chat_id, text)
     return True
 
@@ -84,6 +127,8 @@ def poll_once(
     runtime_client: RuntimeApiClientProtocol,
     settings: TelegramWorkerSettings,
     offset: int | None,
+    command_router: TelegramCommandRouter | None = None,
+    trace_store: TraceMetadataStore | None = None,
 ) -> int | None:
     """Fetch one batch of updates, process them, and return the next offset."""
 
@@ -98,6 +143,8 @@ def poll_once(
             telegram_client=telegram_client,
             runtime_client=runtime_client,
             settings=settings,
+            command_router=command_router,
+            trace_store=trace_store,
         )
         update_id = update.get("update_id")
         if isinstance(update_id, int):
@@ -116,12 +163,16 @@ def run_polling(
 
     log_startup(settings)
     offset: int | None = None
+    command_router = TelegramCommandRouter()
+    trace_store = TraceMetadataStore()
     while True:
         offset = poll_once(
             telegram_client=telegram_client,
             runtime_client=runtime_client,
             settings=settings,
             offset=offset,
+            command_router=command_router,
+            trace_store=trace_store,
         )
 
 
