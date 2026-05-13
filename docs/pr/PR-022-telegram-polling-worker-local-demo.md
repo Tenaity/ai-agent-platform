@@ -18,6 +18,8 @@ Runtime API answer back with Telegram `sendMessage`.
 - Adds `make run-telegram-worker`
 - Updates `.env.example`, README, and current chatbot demo docs
 - Adds `docs/telegram-local-demo.md`
+- PR-022A hardening adds Runtime API 404 handling, clearer wrong-agent logs,
+  and httpx/httpcore token redaction for Telegram Bot API URLs.
 
 ## Explicitly Not Added
 
@@ -41,7 +43,10 @@ deployed integration would invoke an agent while avoiding public webhook
 requirements.
 
 The bot token is read from `TELEGRAM_BOT_TOKEN` and is not included in startup
-logs or test assertions.
+logs, httpx/httpcore log records, exception messages, or test assertions.
+
+Before running the worker, call `GET /v1/agents` on the Runtime API and confirm
+`TELEGRAM_AGENT_ID` is present. The local demo default is `customer_service`.
 
 ## Tests
 

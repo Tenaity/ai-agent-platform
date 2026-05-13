@@ -50,10 +50,13 @@ Run the Runtime API and worker locally:
 
 ```bash
 make run-runtime-api
+curl http://localhost:8000/v1/agents
 make run-telegram-worker
 ```
 
-See [Telegram local demo](../../docs/telegram-local-demo.md) for setup details.
+Confirm `TELEGRAM_AGENT_ID` matches one of the returned agent ids before
+starting the worker. See [Telegram local demo](../../docs/telegram-local-demo.md)
+for setup details.
 
 ---
 

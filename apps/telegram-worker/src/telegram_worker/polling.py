@@ -5,12 +5,17 @@ from __future__ import annotations
 import logging
 from typing import Any, Protocol
 
+from telegram_worker.client import RuntimeAgentNotFoundError
 from telegram_worker.normalizer import normalize_update
 from telegram_worker.settings import TelegramWorkerSettings
 
 LOGGER = logging.getLogger(__name__)
 UNSUPPORTED_MESSAGE = "This local demo bot only supports text messages."
 EMPTY_ANSWER_MESSAGE = "The agent did not return an answer."
+AGENT_NOT_FOUND_MESSAGE = (
+    "The local Telegram worker is configured with an agent id that Runtime API "
+    "does not know. Check GET /v1/agents and update TELEGRAM_AGENT_ID."
+)
 
 
 class TelegramClientProtocol(Protocol):
@@ -58,7 +63,14 @@ def process_update(
                 telegram_client.send_message(chat_id, UNSUPPORTED_MESSAGE)
         return False
 
-    response = runtime_client.invoke_agent(settings.telegram_agent_id, payload)
+    try:
+        response = runtime_client.invoke_agent(settings.telegram_agent_id, payload)
+    except RuntimeAgentNotFoundError as exc:
+        LOGGER.error(str(exc))
+        chat_id = payload["metadata"]["telegram_chat_id"]
+        telegram_client.send_message(chat_id, AGENT_NOT_FOUND_MESSAGE)
+        return False
+
     answer = response.get("answer")
     text = answer if isinstance(answer, str) and answer.strip() else EMPTY_ANSWER_MESSAGE
     chat_id = payload["metadata"]["telegram_chat_id"]

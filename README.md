@@ -247,8 +247,12 @@ make run-runtime-api
 Run the local Telegram polling worker after setting `TELEGRAM_BOT_TOKEN`:
 
 ```bash
+curl http://localhost:8000/v1/agents
 make run-telegram-worker
 ```
+
+Use the `GET /v1/agents` response to confirm `TELEGRAM_AGENT_ID`; the local demo
+defaults to `customer_service`.
 
 Runtime API examples:
 

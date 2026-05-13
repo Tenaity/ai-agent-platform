@@ -36,6 +36,16 @@ Start the Runtime API:
 make run-runtime-api
 ```
 
+Before starting the worker, verify the agent id exposed by the local Runtime
+API:
+
+```bash
+curl http://localhost:8000/v1/agents
+```
+
+Set `TELEGRAM_AGENT_ID` to one of the returned agent ids. The default for the
+current demo is `customer_service`.
+
 In another terminal, start the Telegram worker:
 
 ```bash
