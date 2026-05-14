@@ -1,0 +1,28 @@
+id: container_tracking_triage
+name: Container Tracking Triage
+description: Reusable workflow template for handling container tracking requests.
+version: "0.1.0"
+domain: logistics
+tags:
+  - customer_service
+  - container
+  - tool
+inputs:
+  container_no: Container number supplied by the user.
+outputs:
+  tracking_summary: Deterministic tracking summary for the customer.
+metadata:
+  local_demo_only: true
+steps:
+  - id: extract_container_number
+    title: Extract container number
+    description: Find the likely container number from the user message.
+  - id: validate_format
+    title: Validate container format lightly
+    description: Check that the value has a plausible container-like shape before tool execution.
+  - id: check_tracking_tool
+    title: Check tracking tool
+    description: Route through governed mock tool execution for local demo status lookup.
+  - id: summarize_status
+    title: Summarize status
+    description: Produce a short status update and note any missing or uncertain data.

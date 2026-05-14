@@ -20,7 +20,7 @@ without becoming framework packages.
 
 ## Current Capabilities
 
-After PR-025, the platform includes:
+After PR-026, the platform includes:
 
 - A monorepo scaffold for apps, reusable packages, domain agents, prompts,
   datasets, docs, and future infrastructure.
@@ -69,6 +69,9 @@ After PR-025, the platform includes:
 - A local memo/memory showcase with reusable memo contracts, in-memory
   thread-scoped storage, and Telegram `/memo remember`, `/memo get`,
   `/memo forget`, `/memo list`, and simple memo question commands.
+- A local skills showcase with reusable skill metadata contracts, YAML-loaded
+  workflow templates, and Telegram `/skill list`, `/skill show`, and
+  deterministic `/skill run` commands.
 
 ## Architecture
 
@@ -129,6 +132,7 @@ Current non-goals:
 - No production deployment yet.
 - No durable human approval persistence yet.
 - No durable or vector-backed memory yet.
+- No real skill execution in agent graphs yet.
 
 ## Runtime Request Flow
 
@@ -311,10 +315,10 @@ Completed:
 - PR-023: Telegram Showcase Command Router
 - PR-024: Human-in-the-loop Showcase
 - PR-025: Memo / Memory Showcase
+- PR-026: Skills Showcase
 
 Next:
 
-- PR-026 Skills Showcase
 - PR-027 MCP Showcase
 
 ## Deeper Docs
@@ -333,6 +337,7 @@ Next:
 - [Safety pipeline](docs/safety-pipeline.md)
 - [Human-in-the-loop](docs/human-in-the-loop.md)
 - [Memo / memory showcase](docs/memory-memo-showcase.md)
+- [Skills showcase](docs/skills-showcase.md)
 - [RAG contracts](docs/rag.md)
 - [Citation enforcement](docs/citations.md)
 - [Scaffold templates](docs/scaffold-template.md)
