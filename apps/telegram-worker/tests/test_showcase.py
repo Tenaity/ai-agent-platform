@@ -37,10 +37,10 @@ def test_showcase_returns_demo_script() -> None:
 
 
 def test_placeholder_commands_return_local_response() -> None:
-    parsed = TelegramCommandRouter().parse("/skill list")
-    action = map_showcase_command(parsed, _payload("/skill list"))
+    parsed = TelegramCommandRouter().parse("/mcp list")
+    action = map_showcase_command(parsed, _payload("/mcp list"))
 
-    assert action.local_response == "Skills showcase is planned for PR-026."
+    assert action.local_response == "MCP showcase is planned for PR-027."
     assert action.runtime_payload is None
 
 

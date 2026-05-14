@@ -3,9 +3,9 @@
 The SNP AI Agent Platform is layered runtime infrastructure for building
 domain-specific agents. It provides reusable contracts, graph execution
 plumbing, observability metadata, eval scaffolding, checkpoint configuration,
-tool governance policy, a deterministic safety pipeline skeleton, and
-domain-neutral RAG contracts with citation enforcement, and local memo memory
-contracts. The customer-service
+tool governance policy, a deterministic safety pipeline skeleton,
+domain-neutral RAG contracts with citation enforcement, local memo memory
+contracts, and metadata-driven skill templates. The customer-service
 demo also has local production-like mock API adapters for tool testing and a
 deterministic graph that wires safety, intent routing, local RAG fixtures, and
 governed mock tool execution. It is not a one-off chatbot.
@@ -53,6 +53,10 @@ flowchart TD
 
     AgentGraph --> Memo["Memo Memory Boundary"]
     Memo --> MemoStore["InMemoryMemoStore"]
+
+    AgentGraph --> Skills["Skills Metadata Boundary"]
+    Skills --> SkillRegistry["SkillRegistry"]
+    SkillRegistry --> SkillFiles["skills/*/skill.yaml"]
 
     Invoke --> TraceMeta["Trace Metadata Builder"]
     TraceMeta --> LangSmith["LangSmith Tracing Skeleton"]
@@ -114,6 +118,9 @@ domain-neutral and must not import templates or examples.
 - Memo memory: reusable thread/user/tenant-scoped memo contracts, store
   interface, and local-only `InMemoryMemoStore` for explicit key/value memory
   demos without database or vector persistence.
+- Skills: reusable metadata contracts, YAML loader, and in-memory registry for
+  workflow capability templates. Skills are metadata only in PR-026; no code is
+  executed from skill files.
 - Customer-service mock API adapter: production-like local request/response
   schemas, deterministic fixture-backed client, and `ToolExecutor` adapter for
   testing current chatbot demo tool workflows without real company systems.
@@ -239,6 +246,18 @@ This is explicit thread-scoped key/value memory for the local worker process.
 It is not long-term semantic memory, vector memory, database-backed memory, or
 LLM-driven summarization.
 
+## Skills Metadata Boundary
+
+PR-026 adds `snp_agent_core.skills` contracts, a metadata-only YAML loader, and
+an in-memory registry. Skill files live under `skills/*/skill.yaml` and describe
+workflow templates such as customer-service checklists, container tracking
+triage, and support ticket creation.
+
+The Telegram worker uses these primitives for local `/skill list`,
+`/skill show`, and `/skill run` commands. `/skill run` is deterministic
+simulation only. It does not execute arbitrary code, call an LLM, call tools, or
+call external APIs.
+
 ## RAG And Citations
 
 PR-015 adds RAG contracts and citation enforcement only. `Retriever` is an
@@ -266,6 +285,7 @@ marked ungrounded with missing citations instead of fabricating sources.
 - No database persistence yet.
 - No Memory Manager yet.
 - No durable or vector-backed memory yet.
+- No real skill execution in agent graphs yet.
 - No provider-backed moderation yet.
 - No durable human approval persistence yet.
 - No production deployment scaffolding yet.
@@ -297,6 +317,7 @@ marked ungrounded with missing citations instead of fabricating sources.
 - PR-023: Telegram showcase command router
 - PR-024: human-in-the-loop showcase
 - PR-025: memo / memory showcase
+- PR-026: skills showcase
 
 ## Deeper Docs
 
@@ -313,6 +334,7 @@ marked ungrounded with missing citations instead of fabricating sources.
 - [Safety pipeline](../safety-pipeline.md)
 - [Human-in-the-loop](../human-in-the-loop.md)
 - [Memo / memory showcase](../memory-memo-showcase.md)
+- [Skills showcase](../skills-showcase.md)
 - [RAG contracts](../rag.md)
 - [Qdrant retriever adapter](../qdrant-retriever.md)
 - [Citation enforcement](../citations.md)

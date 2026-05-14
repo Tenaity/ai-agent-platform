@@ -41,7 +41,7 @@ See `architecture.md` for the full boundary diagram and node-level description.
 PR-022 adds `apps/telegram-worker`, a local long-polling worker for Telegram
 BotFather bots. PR-023 turns it into a local showcase cockpit. PR-024 adds
 local human-in-the-loop approval commands. PR-025 adds local thread-scoped memo
-commands. The worker uses Telegram
+commands. PR-026 adds metadata-driven skill commands. The worker uses Telegram
 `getUpdates`, normalizes text updates and showcase commands, calls the Runtime
 API when a command maps to agent behavior, and sends answers back with
 `sendMessage`.
@@ -66,9 +66,10 @@ such as `/rag`, `/tool container`, `/booking`, and `/ticket` route through the
 Runtime API. `/human`, `/approve`, `/reject`, and `/approvals` are local demo
 commands backed by reusable in-memory approval contracts. `/memo remember`,
 `/memo get`, `/memo forget`, `/memo list`, and simple memo questions are local
-thread-scoped memory commands. Future capability commands such as `/mcp`,
-`/a2a`, and `/deepagent` return local placeholder responses until their
-platform PRs exist.
+thread-scoped memory commands. `/skill list`, `/skill show`, and `/skill run`
+demonstrate reusable workflow templates without LLM/tool execution. Future
+capability commands such as `/mcp`, `/a2a`, and `/deepagent` return local
+placeholder responses until their platform PRs exist.
 
 ---
 
@@ -194,6 +195,7 @@ delegate webhook normalization and validation to platform packages.
 - No n8n workflow wiring
 - No durable human approval persistence yet
 - No durable or vector-backed memory yet
+- No real skill execution in agent graphs yet
 
 Follow-up PRs can add each integration independently while keeping platform
 packages reusable and route handlers thin.
@@ -211,3 +213,4 @@ packages reusable and route handlers thin.
 | PR-023 | Telegram Showcase Command Router |
 | PR-024 | Human-in-the-loop Showcase |
 | PR-025 | Memo / Memory Showcase |
+| PR-026 | Skills Showcase |

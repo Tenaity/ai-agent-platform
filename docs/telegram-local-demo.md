@@ -4,7 +4,7 @@ PR-022 adds a local Telegram polling worker so a BotFather-created bot can chat
 with the local Runtime API without public HTTPS deployment. PR-023 turns that
 worker into a lightweight showcase cockpit for platform capabilities. PR-024
 adds local human-in-the-loop approval commands. PR-025 adds local thread-scoped
-memo commands.
+memo commands. PR-026 adds local metadata-driven skill commands.
 
 ## Why Polling
 
@@ -87,7 +87,9 @@ Supported commands:
 - `/memo get <key>`
 - `/memo forget <key>`
 - `/memo list`
-- `/skill <command>`
+- `/skill list`
+- `/skill show <skill_id>`
+- `/skill run <skill_id>`
 - `/mcp <command>`
 - `/a2a <message>`
 - `/acp <message>`
@@ -105,9 +107,12 @@ Recommended demo script:
 6. /human yêu cầu hoàn phí lưu bãi
 7. /memo remember booking BK123
 8. /memo what is my booking?
-9. /mcp list
-10. /a2a ask billing_agent giải thích phí
-11. /deepagent lập kế hoạch xử lý khiếu nại
+9. /skill list
+10. /skill show container_tracking_triage
+11. /skill run support_ticket_creation
+12. /mcp list
+13. /a2a ask billing_agent giải thích phí
+14. /deepagent lập kế hoạch xử lý khiếu nại
 ```
 
 Some commands are placeholders for future PRs. The worker remains thin: it does
@@ -124,6 +129,11 @@ contracts and `InMemoryMemoStore`. They are thread-scoped key/value memos for
 the current Telegram worker process. They are not long-term semantic memory,
 vector memory, or database-backed memory.
 
+Skill commands are local demo commands backed by `snp_agent_core.skills`.
+Skills are reusable workflow capability templates loaded from YAML metadata.
+The demo can list, show, and simulate a skill run, but it does not execute
+arbitrary code, call an LLM, call tools, or call external APIs.
+
 ## Boundary
 
 The worker is an integration/demo app under `apps/telegram-worker`. It calls the
@@ -134,6 +144,6 @@ or external service call is required in CI.
 ## Future Work
 
 Future PRs can add durable approval persistence, LangGraph interrupt/resume,
-Redis/Postgres/vector-backed memory, skills, MCP, agent interop, DeepAgents,
-webhook mode, deployment, richer observability, and Grafana/Loki. Those should
-stay separate from this local polling demo.
+Redis/Postgres/vector-backed memory, skill graph wiring, MCP, agent interop,
+DeepAgents, webhook mode, deployment, richer observability, and Grafana/Loki.
+Those should stay separate from this local polling demo.

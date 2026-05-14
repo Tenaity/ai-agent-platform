@@ -1,0 +1,28 @@
+id: support_ticket_creation
+name: Support Ticket Creation
+description: Reusable workflow template for collecting and confirming support tickets.
+version: "0.1.0"
+domain: customer_service
+tags:
+  - customer_service
+  - support
+  - tool
+inputs:
+  issue_summary: Customer issue summary.
+outputs:
+  ticket_confirmation: Ticket id and next-step confirmation.
+metadata:
+  local_demo_only: true
+steps:
+  - id: gather_issue_summary
+    title: Gather issue summary
+    description: Capture the customer's issue in a concise safe summary.
+  - id: classify_urgency
+    title: Classify urgency
+    description: Apply deterministic local urgency labels for demo handling.
+  - id: create_support_ticket
+    title: Create support ticket through tool
+    description: Route through governed mock tool execution when real integration is unavailable.
+  - id: confirm_ticket_id
+    title: Confirm ticket id
+    description: Return the created ticket id and expected follow-up path.

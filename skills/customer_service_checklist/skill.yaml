@@ -1,0 +1,28 @@
+id: customer_service_checklist
+name: Customer Service Checklist
+description: Reusable checklist for routing a customer-service conversation safely.
+version: "0.1.0"
+domain: customer_service
+tags:
+  - customer_service
+  - routing
+  - safety
+inputs:
+  message: User message to triage.
+outputs:
+  route: Suggested next workflow path.
+metadata:
+  local_demo_only: true
+steps:
+  - id: identify_intent
+    title: Identify customer intent
+    description: Determine whether the message is policy, tracking, booking, ticket, or fallback.
+  - id: check_missing_information
+    title: Check missing information
+    description: Identify required fields before routing to retrieval, tools, or handoff.
+  - id: choose_path
+    title: Choose RAG, tool, or human handoff
+    description: Select the safest deterministic branch based on intent and available information.
+  - id: format_answer
+    title: Format final answer
+    description: Return a concise customer-facing answer with traceable metadata where available.

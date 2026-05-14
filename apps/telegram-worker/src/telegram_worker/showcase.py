@@ -27,7 +27,10 @@ HELP_RESPONSE = """Commands:
 /memo get <key> - recall a thread-scoped memo
 /memo forget <key> - delete a thread-scoped memo
 /memo list - list thread-scoped memos
-/skill, /mcp, /a2a, /acp, /deepagent, /eval - future showcases"""
+/skill list - list reusable skill templates
+/skill show <skill_id> - show skill metadata and steps
+/skill run <skill_id> - simulate a deterministic skill run
+/mcp, /a2a, /acp, /deepagent, /eval - future showcases"""
 
 SHOWCASE_RESPONSE = """Recommended demo script:
 1. /rag giờ làm việc
@@ -37,12 +40,14 @@ SHOWCASE_RESPONSE = """Recommended demo script:
 5. /trace
 6. /human yêu cầu hoàn phí lưu bãi
 7. /memo remember booking BK123
-8. /mcp list
-9. /a2a ask billing_agent giải thích phí
-10. /deepagent lập kế hoạch xử lý khiếu nại"""
+8. /skill list
+9. /skill show container_tracking_triage
+10. /skill run support_ticket_creation
+11. /mcp list
+12. /a2a ask billing_agent giải thích phí
+13. /deepagent lập kế hoạch xử lý khiếu nại"""
 
 PLACEHOLDER_RESPONSES: dict[TelegramCommand, str] = {
-    TelegramCommand.SKILL: "Skills showcase is planned for PR-026.",
     TelegramCommand.MCP: "MCP showcase is planned for PR-027.",
     TelegramCommand.A2A: "Agent interop showcase is planned for PR-028.",
     TelegramCommand.ACP: "Agent interop showcase is planned for PR-028.",
