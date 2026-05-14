@@ -4,7 +4,8 @@ The SNP AI Agent Platform is layered runtime infrastructure for building
 domain-specific agents. It provides reusable contracts, graph execution
 plumbing, observability metadata, eval scaffolding, checkpoint configuration,
 tool governance policy, a deterministic safety pipeline skeleton, and
-domain-neutral RAG contracts with citation enforcement. The customer-service
+domain-neutral RAG contracts with citation enforcement, and local memo memory
+contracts. The customer-service
 demo also has local production-like mock API adapters for tool testing and a
 deterministic graph that wires safety, intent routing, local RAG fixtures, and
 governed mock tool execution. It is not a one-off chatbot.
@@ -49,6 +50,9 @@ flowchart TD
 
     AgentGraph --> Approval["Human Approval Boundary"]
     Approval --> ApprovalStore["InMemoryApprovalStore"]
+
+    AgentGraph --> Memo["Memo Memory Boundary"]
+    Memo --> MemoStore["InMemoryMemoStore"]
 
     Invoke --> TraceMeta["Trace Metadata Builder"]
     TraceMeta --> LangSmith["LangSmith Tracing Skeleton"]
@@ -107,6 +111,9 @@ domain-neutral and must not import templates or examples.
 - Human-in-the-loop: reusable approval request contracts, approval status/risk
   enums, store interface, and local-only `InMemoryApprovalStore` for demo
   approval workflows without database persistence.
+- Memo memory: reusable thread/user/tenant-scoped memo contracts, store
+  interface, and local-only `InMemoryMemoStore` for explicit key/value memory
+  demos without database or vector persistence.
 - Customer-service mock API adapter: production-like local request/response
   schemas, deterministic fixture-backed client, and `ToolExecutor` adapter for
   testing current chatbot demo tool workflows without real company systems.
@@ -221,6 +228,17 @@ do not import Telegram code.
 This is local/demo-only. There is no database persistence, production action
 execution, webhook, deployment, or LangGraph interrupt/resume wiring yet.
 
+## Memo Memory Boundary
+
+PR-025 adds `snp_agent_memory` contracts and an in-memory memo store. The
+Telegram worker uses it for local `/memo remember`, `/memo get`, `/memo forget`,
+`/memo list`, and simple memo question commands. The worker remains a demo UI;
+packages do not import Telegram code.
+
+This is explicit thread-scoped key/value memory for the local worker process.
+It is not long-term semantic memory, vector memory, database-backed memory, or
+LLM-driven summarization.
+
 ## RAG And Citations
 
 PR-015 adds RAG contracts and citation enforcement only. `Retriever` is an
@@ -247,6 +265,7 @@ marked ungrounded with missing citations instead of fabricating sources.
 - No production Zalo, TMS, CRM, Billing, or support integrations yet.
 - No database persistence yet.
 - No Memory Manager yet.
+- No durable or vector-backed memory yet.
 - No provider-backed moderation yet.
 - No durable human approval persistence yet.
 - No production deployment scaffolding yet.
@@ -277,6 +296,7 @@ marked ungrounded with missing citations instead of fabricating sources.
 - PR-022: Telegram polling worker local demo
 - PR-023: Telegram showcase command router
 - PR-024: human-in-the-loop showcase
+- PR-025: memo / memory showcase
 
 ## Deeper Docs
 
@@ -292,6 +312,7 @@ marked ungrounded with missing citations instead of fabricating sources.
 - [Mock API adapters](../mock-api-adapters.md)
 - [Safety pipeline](../safety-pipeline.md)
 - [Human-in-the-loop](../human-in-the-loop.md)
+- [Memo / memory showcase](../memory-memo-showcase.md)
 - [RAG contracts](../rag.md)
 - [Qdrant retriever adapter](../qdrant-retriever.md)
 - [Citation enforcement](../citations.md)

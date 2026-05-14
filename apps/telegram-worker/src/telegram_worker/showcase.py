@@ -23,7 +23,11 @@ HELP_RESPONSE = """Commands:
 /approve <approval_id> - approve a pending approval
 /reject <approval_id> - reject a pending approval
 /approvals - list pending approvals
-/memo, /skill, /mcp, /a2a, /acp, /deepagent, /eval - future showcases"""
+/memo remember <key> <value> - remember a thread-scoped memo
+/memo get <key> - recall a thread-scoped memo
+/memo forget <key> - delete a thread-scoped memo
+/memo list - list thread-scoped memos
+/skill, /mcp, /a2a, /acp, /deepagent, /eval - future showcases"""
 
 SHOWCASE_RESPONSE = """Recommended demo script:
 1. /rag giờ làm việc
@@ -38,7 +42,6 @@ SHOWCASE_RESPONSE = """Recommended demo script:
 10. /deepagent lập kế hoạch xử lý khiếu nại"""
 
 PLACEHOLDER_RESPONSES: dict[TelegramCommand, str] = {
-    TelegramCommand.MEMO: "Memo showcase is planned for PR-025.",
     TelegramCommand.SKILL: "Skills showcase is planned for PR-026.",
     TelegramCommand.MCP: "MCP showcase is planned for PR-027.",
     TelegramCommand.A2A: "Agent interop showcase is planned for PR-028.",
