@@ -3,7 +3,8 @@
 PR-022 adds a local Telegram polling worker so a BotFather-created bot can chat
 with the local Runtime API without public HTTPS deployment. PR-023 turns that
 worker into a lightweight showcase cockpit for platform capabilities. PR-024
-adds local human-in-the-loop approval commands.
+adds local human-in-the-loop approval commands. PR-025 adds local thread-scoped
+memo commands.
 
 ## Why Polling
 
@@ -82,7 +83,10 @@ Supported commands:
 - `/approve <approval_id>`
 - `/reject <approval_id>`
 - `/approvals`
-- `/memo <message>`
+- `/memo remember <key> <value>`
+- `/memo get <key>`
+- `/memo forget <key>`
+- `/memo list`
 - `/skill <command>`
 - `/mcp <command>`
 - `/a2a <message>`
@@ -100,9 +104,10 @@ Recommended demo script:
 5. /trace
 6. /human yêu cầu hoàn phí lưu bãi
 7. /memo remember booking BK123
-8. /mcp list
-9. /a2a ask billing_agent giải thích phí
-10. /deepagent lập kế hoạch xử lý khiếu nại
+8. /memo what is my booking?
+9. /mcp list
+10. /a2a ask billing_agent giải thích phí
+11. /deepagent lập kế hoạch xử lý khiếu nại
 ```
 
 Some commands are placeholders for future PRs. The worker remains thin: it does
@@ -114,6 +119,11 @@ Human-in-the-loop commands are local demo commands backed by the reusable
 execute real production actions, persist to a database, or call Runtime API in
 PR-024.
 
+Memo commands are local demo commands backed by the reusable `snp_agent_memory`
+contracts and `InMemoryMemoStore`. They are thread-scoped key/value memos for
+the current Telegram worker process. They are not long-term semantic memory,
+vector memory, or database-backed memory.
+
 ## Boundary
 
 The worker is an integration/demo app under `apps/telegram-worker`. It calls the
@@ -124,6 +134,6 @@ or external service call is required in CI.
 ## Future Work
 
 Future PRs can add durable approval persistence, LangGraph interrupt/resume,
-memory/memo, skills, MCP, agent interop, DeepAgents, webhook mode, deployment,
-richer observability, and Grafana/Loki. Those should stay separate from this
-local polling demo.
+Redis/Postgres/vector-backed memory, skills, MCP, agent interop, DeepAgents,
+webhook mode, deployment, richer observability, and Grafana/Loki. Those should
+stay separate from this local polling demo.

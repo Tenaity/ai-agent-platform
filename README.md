@@ -20,7 +20,7 @@ without becoming framework packages.
 
 ## Current Capabilities
 
-After PR-024, the platform includes:
+After PR-025, the platform includes:
 
 - A monorepo scaffold for apps, reusable packages, domain agents, prompts,
   datasets, docs, and future infrastructure.
@@ -66,6 +66,9 @@ After PR-024, the platform includes:
 - A local human-in-the-loop showcase with reusable approval contracts,
   in-memory approval storage, and Telegram `/human`, `/approve`, `/reject`, and
   `/approvals` commands.
+- A local memo/memory showcase with reusable memo contracts, in-memory
+  thread-scoped storage, and Telegram `/memo remember`, `/memo get`,
+  `/memo forget`, `/memo list`, and simple memo question commands.
 
 ## Architecture
 
@@ -125,6 +128,7 @@ Current non-goals:
   GraphRAG yet.
 - No production deployment yet.
 - No durable human approval persistence yet.
+- No durable or vector-backed memory yet.
 
 ## Runtime Request Flow
 
@@ -306,10 +310,10 @@ Completed:
 - PR-022: Telegram Polling Worker Local Demo
 - PR-023: Telegram Showcase Command Router
 - PR-024: Human-in-the-loop Showcase
+- PR-025: Memo / Memory Showcase
 
 Next:
 
-- PR-025 Memo / Lightweight Memory Showcase
 - PR-026 Skills Showcase
 - PR-027 MCP Showcase
 
@@ -328,6 +332,7 @@ Next:
 - [Mock API adapters](docs/mock-api-adapters.md)
 - [Safety pipeline](docs/safety-pipeline.md)
 - [Human-in-the-loop](docs/human-in-the-loop.md)
+- [Memo / memory showcase](docs/memory-memo-showcase.md)
 - [RAG contracts](docs/rag.md)
 - [Citation enforcement](docs/citations.md)
 - [Scaffold templates](docs/scaffold-template.md)
